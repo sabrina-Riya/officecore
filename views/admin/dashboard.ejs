@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Dashboard</title>
+</head>
+<body>
+   <a href="/logout">Logout</a>
+  
+
+  <h2>Welcome <%=adminame %> to Admin Dashboard</h2>
+
+  
+    <ul>
+      <li>Total Employees: <%= totaluser %></li>
+      <li>Total Leave Requests: <%=Leaveuser %> </li>
+      
+      <li>Approved Leaves: <%= approveuser%> </li>
+      <li>Rejected Leaves:<%= rejectuser%> </li>
+    </ul>
+
+   
+    <br><a href="/admin/leave">Manage Leaves</a>
+    <br><a href="/admin/users">Users</a>
+  
+
+  <footer>
+    <p>© 2025 OfficeCore</p>
+  </footer>
+</body>
+</html>
+
+
+
+
+
+

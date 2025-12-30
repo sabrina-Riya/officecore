@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OfficeCore login</title>
+    
+</head>
+<body>
+    <h2>Login </h2>
+    <ul>
+        <% if (messages.success_msg){ %>
+            <li><%= messages.success_msg %></li>
+        <% } %>
+    </ul>
+
+    <ul>
+        <% if(messages.error){ %>
+            <li><% = messages.error %></li>
+            
+        <% } %>
+
+
+    </ul>
+    <form action="/login" method="post"> <br>
+      <input id="mail" type="email" name="email" placeholder=" enter yourt email ">
+      <br><br><input id="pass" type="password"name="password" placeholder="enter your password ">
+      <br><br>
+      <button type="submit">submit</button>
+
+
+    </form>
+    <br><a href="/register">if not registered please go and register </a>
+
+    <footer>
+        <p>© 2025 OfficeCore</p>
+    </footer>
+</body>
+</html>

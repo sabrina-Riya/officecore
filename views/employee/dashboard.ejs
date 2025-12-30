@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OfficeCore Employee Dashboard</title>
+    
+</head>
+<body>
+    
+            
+    <a href="/logout">logout</a> <!--<a> tag normally contains get method-->
+            
+    <h2> welcome <%= user %> to OfficeCore's Dashboard</h2>
+    <section>
+      <h3> Leave Summary</h3>
+      <ul>
+        <li> total leaves taken:<%= Totalleave%> </li>
+        
+        <li>Approved leaves:<%= approvedLeave%></li>
+        <li>Rejected leaves:<%= rejectedLeave%></li>
+      </ul>
+    </section>
+
+    <br><a href="/employee/leave-apply">Apply for leave</a>
+    <br><a href="/employee/leave-list">view Leave request</a>
+        
+    
+
+    <footer>
+        <br><br><p>© 2025 OfficeCore</p>
+    </footer>
+</body>
+</html>

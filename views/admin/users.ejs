@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin User Management</title>
+</head>
+<body>
+
+  
+      
+  <a href="/logout">Logout</a>
+    
+
+  <h2>All Users</h2>
+
+  <%if(element.length==0){ %>
+    <p>No users found</p>
+  <%}else{ %>
+    <%element.forEach(user=>{ %>
+
+      <p><strong>Name:</strong><%=user.name %></p>
+      <p><strong>ID:</strong> <%= user.id %></p>
+      <p><strong>Name:</strong> <%= user.name %></p>
+      <p><strong>Email:</strong> <%= user.email %></p>
+      <p><strong>Role:</strong> <%= user.role %></p>
+      <p><strong>Joined:</strong> <%= user.created_at.toDateString() %></p>
+ 
+    <%}) %>
+    
+  <%} %>
+
+  
+  <a href="/admin/dashboard">Back to Dashboard</a>
+  <br><a href="/admin/dashboard">Dashboard</a>
+  <br><a href="/admin/leave">Manage Leaves</a>
+</body>
+</html>

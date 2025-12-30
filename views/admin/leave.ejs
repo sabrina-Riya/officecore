@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin Leave Management</title>
+</head>
+<body>
+  
+
+  <h2>Leave requests</h2>
+  <%if(leaves.length==0){ %>
+    <p> No pending leave requests found</p>
+  <%}else{ %>
+    <%leaves.forEach(element=>{%>
+      <p><strong>employee:</strong><%=element.name %></p>
+      <p><strong>From:</strong><%= element.start_date.toDateString() %></p>
+      <P><strong>To:</strong><%= element.end_date.toDateString() %></P>
+      <p><strong>Reason:</strong><%=element.reason %></p>
+      <p><strong>Status:</strong><%=element.status %></p>
+      <P><strong>Applied On:</strong><%=element.created_at.toDateString() %></P>
+
+      <%if(element.status=="pending"){%>
+      <form action="/admin/leave/approve/<%= element.id %>"method="post"> <button type="submit">Approve</button></form>
+      <form action="/admin/leave/reject/<%= element.id %>"method="post"><button type="submit">Reject</button></form>
+
+    <%}%>
+
+    <%})%>
+    
+  <%}%>
+
+
+  
+  <a href="/admin/dashboard">Back to Dashboard</a>
+  <br><a href="/admin/users">Manage Users</a>
+  <br><a href="/logout">Logout</a>
+</body>
+</html>

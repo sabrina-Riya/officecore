@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OfficeCore Employee Leave List</title>
+</head>
+<body>
+
+  <h2>Your Leave Requests</h2>
+
+  <%if(leave.length==0){ %>
+    <p>No record of leave application found.</p>
+  <%}else{ %>
+    <%leave.forEach(item=>{ %>
+
+      
+      <p><strong>Starting Date:</strong><%=item.start_date.toDateString() %></p>
+      <p><strong>Ending Date:</strong><%= item.end_date.toDateString() %></p>
+      <p><strong>Reason:</strong><%= item.reason %></p>
+      <p><strong>Status:</strong><%= item.status %></p>
+      <p><strong>Applied On:</strong><%=item.created_at.toDateString() %></p>
+
+    <%}) %>
+
+  <%}%>
+
+  
+  
+  
+  <a href="/employee/leave-apply">apply for a leave</a>
+
+  <br>
+  <a href="/employee/dashboard">Back to Dashboard</a>
+
+</body>
+</html>

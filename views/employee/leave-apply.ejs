@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OfficeCore Employee leave-apply</title>
+    
+</head>
+<body>
+    <p>Form to apply for leave</p>
+    <form action="/employee/leave-apply" method="post">
+      <br><br><p>starting Date:</p>
+      <input type="date" placeholder="starting date" name="sdate"><br>
+      <p>Ending Date:</p>
+      <input type="date" placeholder="ending date" name="edate"><br>
+      <br><input type="text" placeholder="Reason for leave" name="reason">
+      <br><br><button type="submit">Submit</button>
+
+      <br><br><a href="/employee/dashboard">Home page</a>
+
+
+    </form>
+    <footer>
+        <p>© 2025 OfficeCore</p>
+    </footer>
+</body>
+</html>
