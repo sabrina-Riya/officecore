@@ -1,15 +1,12 @@
-require ("dotenv").config();
-const {Pool}=require("pg");
-const isproduction=process.env.NODE_ENV==="production";
-//postgresql://<DB_USER>:<DB_PASSWORD>@<DB_HOST>:<DB_PORT>/<DB_NAME>
+const { Pool } = require("pg");
 
-const connectionString=`postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`
-
-
-const pool=new Pool({
-  
-  connectionString: isproduction ? process.env.DATABASE_URL || connectionString
-  :connectionString
-
+const pool = new Pool({
+    host: process.env.PGHOST,                     // Railway host or localhost
+    port: process.env.PGPORT,                     // Railway port or local port
+    user: process.env.PGUSER || process.env.POSTGRES_USER,       // Railway user
+    password: process.env.PGPASSWORD || process.env.POSTGRES_PASSWORD, // Railway password
+    database: process.env.POSTGRES_DB,            // Railway database
+    ssl: process.env.PGHOST === "localhost" ? false : { rejectUnauthorized: false } // Railway needs SSL
 });
-module.exports={pool};
+
+module.exports = { pool };
