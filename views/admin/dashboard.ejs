@@ -5,33 +5,27 @@
   <title>Admin Dashboard</title>
 </head>
 <body>
-   <a href="/logout">Logout</a>
-  
+  <!-- Logout -->
+  <a href="/logout">Logout</a>
 
-  <h2>Welcome <%=adminame %> to Admin Dashboard</h2>
+  <!-- Welcome Message -->
+  <h2>Welcome <%= adminame %> to Admin Dashboard</h2>
 
-  
-    <ul>
-      <li>Total Employees: <%= totaluser %></li>
-      <li>Total Leave Requests: <%=Leaveuser %> </li>
-      
-      
-      <li>Rejected Leaves:<%= rejectuser%> </li>
-    </ul>
+  <!-- Dashboard Stats -->
+  <ul>
+    <li>Total Employees: <%= totaluser %></li>
+    <li>Total Leave Requests: <%= Leaveuser %></li>
+    <li>Approved Leaves: <%= approveuser %></li>
+    <li>Rejected Leaves: <%= rejectuser %></li>
+  </ul>
 
-   
-    <br><a href="/admin/leave">Manage Leaves</a>
-    <br><a href="/admin/users">Users</a>
-  
+  <!-- Navigation Links -->
+  <br><a href="/admin/leave">Manage Leaves</a>
+  <br><a href="/admin/users">Users</a>
 
+  <!-- Footer -->
   <footer>
     <p>© 2025 OfficeCore</p>
   </footer>
 </body>
 </html>
-
-
-
-
-
-

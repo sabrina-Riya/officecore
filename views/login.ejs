@@ -5,33 +5,37 @@
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OfficeCore login</title>
-    
 </head>
 <body>
     <h2>Login </h2>
+
+    <!-- Success messages -->
     <ul>
-        <% if (messages.success_msg){ %>
-            <li><%= messages.success_msg %></li>
+        <% if (messages.success_msg && messages.success_msg.length > 0) { %>
+            <% messages.success_msg.forEach(msg => { %>
+                <li><%= msg %></li>
+            <% }) %>
         <% } %>
     </ul>
 
+    <!-- Error messages -->
     <ul>
-        <% if(messages.error){ %>
-            <li><= messages.error %></li>
-            
+        <% if (messages.error && messages.error.length > 0) { %>
+            <% messages.error.forEach(msg => { %>
+                <li><%= msg %></li>
+            <% }) %>
         <% } %>
-
-
     </ul>
+
     <form action="/login" method="post"> <br>
-      <input id="mail" type="email" name="email" placeholder=" enter yourt email ">
-      <br><br><input id="pass" type="password"name="password" placeholder="enter your password ">
+      <input id="mail" type="email" name="email" placeholder="Enter your email">
       <br><br>
-      <button type="submit">submit</button>
-
-
+      <input id="pass" type="password" name="password" placeholder="Enter your password">
+      <br><br>
+      <button type="submit">Submit</button>
     </form>
-    <br><a href="/register">if not registered please go and register </a>
+
+    <br><a href="/register">If not registered, please register here</a>
 
     <footer>
         <p>© 2025 OfficeCore</p>
