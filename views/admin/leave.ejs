@@ -12,7 +12,7 @@
     <p> No pending leave requests found</p>
   <%}else{ %>
     <%leaves.forEach(element=>{%>
-      <p><strong>employee:</strong><%=element.name %></p>
+      <p><strong>employee:</strong><%=element.employee_name %></p>
       <p><strong>From:</strong><%= element.start_date.toDateString() %></p>
       <P><strong>To:</strong><%= element.end_date.toDateString() %></P>
       <p><strong>Reason:</strong><%=element.reason %></p>

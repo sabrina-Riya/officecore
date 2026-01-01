@@ -100,7 +100,7 @@ app.get("/admin/leave",ensureAuthenticated,permitRoles("admin"),async(req,res)=>
 app.post("/admin/leave/approve/:id",ensureAuthenticated,permitRoles("admin"),async(req,res)=>{
   const leaveid=req.params.id;
   try{
-    await pool.query ("update user set status='approved' where id=$1",[leaveid]);
+    await pool.query ("update leave set status='approved' where id=$1",[leaveid]);
     res.redirect("/admin/leave");
 
   }catch(err){
