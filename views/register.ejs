@@ -1,34 +1,99 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OfficeCore Registration page</title>
-    
+  <meta charset="UTF-8">
+  <title>OfficeCore Registration</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 40px;
+    }
+
+    h2 {
+      color: #333;
+    }
+
+    form {
+      background-color: #fff;
+      padding: 20px;
+      width: 300px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      border-radius: 8px;
+    }
+
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 12px;
+      border-radius: 4px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      width: 100%;
+      padding: 8px;
+      background-color: #007bff;
+      color: #fff;
+      border: none;
+      cursor: pointer;
+      border-radius: 4px;
+      font-weight: bold;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .message {
+      margin-bottom: 10px;
+      color: red;
+    }
+
+    a {
+      text-decoration: none;
+      color: #007bff;
+      display: block;
+      margin-top: 10px;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    footer {
+      margin-top: 30px;
+      font-size: 0.9em;
+      color: #666;
+    }
+  </style>
 </head>
 <body>
-  <ul>
-    <% if(error){ %>
-      <% error.forEach(err=>{ %>
-        <li><%=err.message %></li>
-      <%}) %>
-    <%}%>
-  </ul>
-  <form action="register" method="post">
-    <input type="text" name="name" placeholder="enter your name" required><br>
 
-    <br><input type="email" name="email" placeholder="enter your email" required><br>
-    <br><input type="password" name="password" placeholder="enter your password" required><br>
-    <br><input type="password" name="conpass" placeholder="confirm your password" required>
-    <br><button type="submit">Submit</button>
+  <h2>Register</h2>
+
+  <% if(error && error.length > 0){ %>
+    <% error.forEach(err => { %>
+      <div class="message"><%= err.message %></div>
+    <% }) %>
+  <% } %>
+
+  <form action="/register" method="post">
+    <input type="text" name="name" placeholder="Enter your name" required>
+    <input type="email" name="email" placeholder="Enter your email" required>
+    <input type="password" name="password" placeholder="Enter your password" required>
+    <input type="password" name="conpass" placeholder="Confirm your password" required>
+    <button type="submit">Register</button>
   </form>
 
-  
-  <p>already registered ? <a href="/login">login here</a></p>
+  <p>Already registered? <a href="/login">Login here</a></p>
 
-    <footer>
-        <p>© 2025 OfficeCore</p>
-    </footer>
+  <footer>
+    © 2025 OfficeCore
+  </footer>
+
 </body>
 </html>

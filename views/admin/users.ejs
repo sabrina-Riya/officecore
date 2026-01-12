@@ -3,35 +3,110 @@
 <head>
   <meta charset="UTF-8">
   <title>Admin User Management</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f8;
+      margin: 30px;
+    }
+
+    h2 {
+      color: #333;
+    }
+
+    a {
+      text-decoration: none;
+      color: #007bff;
+      margin-right: 15px;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background-color: #fff;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
+    .role-badge {
+      padding: 4px 8px;
+      border-radius: 5px;
+      color: #fff;
+      font-weight: bold;
+    }
+
+    .employee { background-color: #28a745; }
+    .admin { background-color: #dc3545; }
+
+    footer {
+      margin-top: 40px;
+      font-size: 0.9em;
+      color: #666;
+    }
+  </style>
 </head>
 <body>
 
-  
-      
-  <a href="/logout">Logout</a>
-    
-
   <h2>All Users</h2>
 
-  <%if(element.length==0){ %>
-    <p>No users found</p>
-  <%}else{ %>
-    <%element.forEach(user=>{ %>
+  <% if (element.length === 0) { %>
+    <p>No users found.</p>
+  <% } else { %>
+    <table>
+      <thead>
+        <tr>
+          <th>ID</th>
+          <th>Name</th>
+          <th>Email</th>
+          <th>Role</th>
+          <th>Joined On</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% element.forEach(user => { %>
+          <tr>
+            <td><%= user.id %></td>
+            <td><%= user.name %></td>
+            <td><%= user.email %></td>
+            <td>
+              <span class="role-badge <%= user.role.toLowerCase() %>">
+                <%= user.role %>
+              </span>
+            </td>
+            <td><%= user.created_at.toDateString() %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
 
-      <p><strong>Name:</strong><%=user.name %></p>
-      <p><strong>ID:</strong> <%= user.id %></p>
-      <p><strong>Name:</strong> <%= user.name %></p>
-      <p><strong>Email:</strong> <%= user.email %></p>
-      <p><strong>Role:</strong> <%= user.role %></p>
-      <p><strong>Joined:</strong> <%= user.created_at.toDateString() %></p>
- 
-    <%}) %>
-    
-  <%} %>
-
-  
+  <br>
   <a href="/admin/dashboard">Back to Dashboard</a>
-  <br><a href="/admin/dashboard">Dashboard</a>
-  <br><a href="/admin/leave">Manage Leaves</a>
+  <a href="/admin/leave">Manage Leaves</a>
+  <a href="/logout">Logout</a>
+
+  <footer>
+    © 2025 OfficeCore
+  </footer>
+
 </body>
 </html>

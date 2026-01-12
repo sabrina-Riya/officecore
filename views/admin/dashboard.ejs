@@ -3,29 +3,99 @@
 <head>
   <meta charset="UTF-8">
   <title>Admin Dashboard</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f8;
+      margin: 30px;
+    }
+
+    h2 {
+      color: #333;
+    }
+
+    a {
+      text-decoration: none;
+      color: #007bff;
+      margin-right: 15px;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .cards-container {
+      display: flex;
+      gap: 20px;
+      flex-wrap: wrap;
+      margin-top: 20px;
+    }
+
+    .card {
+      background-color: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      width: 200px;
+      text-align: center;
+    }
+
+    .card h3 {
+      margin-top: 0;
+      color: #555;
+    }
+
+    .card span {
+      display: inline-block;
+      padding: 6px 12px;
+      margin-top: 8px;
+      background-color: #007bff;
+      color: #fff;
+      border-radius: 6px;
+      font-weight: bold;
+    }
+
+    footer {
+      margin-top: 40px;
+      font-size: 0.9em;
+      color: #666;
+    }
+  </style>
 </head>
 <body>
-  <!-- Logout -->
+
   <a href="/logout">Logout</a>
 
-  <!-- Welcome Message -->
   <h2>Welcome <%= adminame %> to Admin Dashboard</h2>
 
-  <!-- Dashboard Stats -->
-  <ul>
-    <li>Total Employees: <%= totaluser %></li>
-    <li>Total Leave Requests: <%= Leaveuser %></li>
-    <li>Approved Leaves: <%= approveuser %></li>
-    <li>Rejected Leaves: <%= rejectuser %></li>
-  </ul>
+  <div class="cards-container">
+    <div class="card">
+      <h3>Total Employees</h3>
+      <span><%= totaluser %></span>
+    </div>
 
-  <!-- Navigation Links -->
-  <br><a href="/admin/leave">Manage Leaves</a>
-  <br><a href="/admin/users">Users</a>
+    <div class="card">
+      <h3>Total Leave Requests</h3>
+      <span><%= Leaveuser %></span>
+    </div>
 
-  <!-- Footer -->
+    <div class="card">
+      <h3>Approved Leaves</h3>
+      <span><%= approveuser %></span>
+    </div>
+
+    <div class="card">
+      <h3>Rejected Leaves</h3>
+      <span><%= rejectuser %></span>
+    </div>
+  </div>
+
+  <br>
+  <a href="/admin/leave">Manage Leaves</a>
+  <a href="/admin/users">Users</a>
+
   <footer>
-    <p>© 2025 OfficeCore</p>
+    © 2025 OfficeCore
   </footer>
 </body>
 </html>

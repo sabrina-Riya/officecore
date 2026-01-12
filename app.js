@@ -34,13 +34,13 @@ app.use(flash()); //these type of middle ware app.use()order matters
 //for employeewha
 app.get("/employee/dashboard", ensureAuthenticated,permitRoles("employee"),async(req, res) => {
   try{
-    const totalleaves=await pool.query("select count(*) from leave where user_id=$1",[req.user.id]);
-    const approveleave=await pool.query("select count(*) from leave where user_id=$1 and status='approved'",[req.user.id]);
-    const rejectleave=await pool.query("select count(*)from leave where user_id=$1 and status='rejected'",[req.user.id]);
+    const totalleaves=await pool.query("select count(*) from leave_req where user_id=$1",[req.user.id]);
+    const approveleave=await pool.query("select count(*) from leave_req where user_id=$1 and status='approved'",[req.user.id]);
+    const rejectleave=await pool.query("select count(*) from leave_req where user_id=$1 and status='rejected'",[req.user.id]);
 
     res.render("employee/dashboard", {
     user: req.user.name,
-    Totalleave:totalleaves.rows[0].count,
+    totalleave:totalleaves.rows[0].count,
     approvedLeave:approveleave.rows[0].count,
     rejectedLeave:rejectleave.rows[0].count
 
@@ -58,16 +58,21 @@ app.get("/employee/dashboard", ensureAuthenticated,permitRoles("employee"),async
 app.get("/admin/dashboard", ensureAuthenticated,permitRoles("admin"),async(req, res) => {
   try{
     const totUser=await pool.query("select count(*) from users");
-    const leaveuser=await pool.query("select count(*) from leave where status='pending'");
-    const appuser=await pool.query("select count(*) from leave where status='approved'");
-    const rejuser=await pool.query("select count(*) from leave where status='rejected'");
+    const leaveuser=await pool.query("select count(*) from leave_req where status='pending'");
+    const appuser=await pool.query("select count(*) from leave_req where status='approved'");
+    const rejuser=await pool.query("select count(*) from leave_req where status='rejected'");
+    
+
+    const newRequest=await pool.query("select leave_req.id,users.name as employee_name,leave_req.start_date,leave_req.end_date,leave_req.reason,leave_req.created_at from leave_req join users on leave_req.user_id=users.id where leave_req.status='pending'order by leave_req.created_at asc limit 5");
 
     res.render("admin/dashboard",{
       adminame:req.user.name,
       totaluser:totUser.rows[0].count,
       Leaveuser:leaveuser.rows[0].count,
       approveuser:appuser.rows[0].count,
-      rejectuser:rejuser.rows[0].count
+      rejectuser:rejuser.rows[0].count,
+      
+      pendingRequest:newRequest.rows[0]
 
 
     });
@@ -82,9 +87,27 @@ app.get("/admin/dashboard", ensureAuthenticated,permitRoles("admin"),async(req, 
 //leave management
 //viewing all the rows
 app.get("/admin/leave",ensureAuthenticated,permitRoles("admin"),async(req,res)=>{
+  const checkstatus=req.query.status;
+  const filter=checkstatus||"all";
+
+  
   try{
-    const result=await pool.query("select leave.id,users.name as employee_name,leave.start_date,leave.end_date,leave.reason,leave.status,leave.created_at from leave join users on leave.user_id=users.id order by leave.created_at desc");
-    res.render("admin/leave",{leaves:result.rows});
+    let result;
+    if(checkstatus==="pending"){
+      result=await pool.query("select lr.*,a.name as actioned_by,u.name as employee_name from leave_req lr inner join users u on lr.user_id=u.id left join users a  on lr.approved_by=a.id where lr.status='pending' order by lr.created_at desc");
+
+    }else if(checkstatus=="approved"){
+      result=await pool.query("select lr.* ,a.name as actioned_by ,u.name as employee_name from leave_req lr inner join users u on lr.user_id=u.id left join users a on lr.approved_by=a.id where lr.status='approved' order by lr.created_at desc");
+    }else if(checkstatus=="rejected"){
+      result=await pool.query("select lr.* ,a.name as actioned_by ,u.name as employee_name from leave_req lr inner join users u on lr.user_id=u.id left join users a on lr.approved_by=a.id where lr.status='rejected' order by lr.created_at desc");
+    }
+    
+    else{
+      result=await pool.query ("select lr.* ,a.name as actioned_by ,u.name as employee_name from leave_req lr inner join users u on lr.user_id=u.id left join users a on lr.approved_by=a.id order by lr.created_at desc  ");
+    }
+
+    
+    res.render("admin/leave",{leaves:result.rows,filter});
 
   }catch(err){
     console.log(err.message);
@@ -99,12 +122,13 @@ app.get("/admin/leave",ensureAuthenticated,permitRoles("admin"),async(req,res)=>
 
 app.post("/admin/leave/approve/:id",ensureAuthenticated,permitRoles("admin"),async(req,res)=>{
   const leaveid=req.params.id;
+  const adminid=req.user.id;
   try{
-    await pool.query ("update leave set status='approved' where id=$1",[leaveid]);
+    await pool.query ("update leave_req set status='approved', approved_by=$1,actioned_at=Now() where id=$2",[adminid,leaveid]);
     res.redirect("/admin/leave");
 
   }catch(err){
-    console.log(err.messsage);
+    console.log(err.message);
     res.redirect("/admin/leave")
   }
 
@@ -113,8 +137,10 @@ app.post("/admin/leave/approve/:id",ensureAuthenticated,permitRoles("admin"),asy
 //reject
 app.post("/admin/leave/reject/:id",ensureAuthenticated,permitRoles("admin"),async(req,res)=>{
   const leaveid=req.params.id;
+  const reason=req.body.reason;
+  const adminid1=req.user.id;
   try{
-    await pool.query("update leave set status='rejected' where id=$1",[leaveid]);
+    await pool.query("update leave_req set status=$1,rejection_reason=$2, approved_by=$3,actioned_at=now() where id=$4" ,["rejected",reason,adminid1,leaveid]);
     res.redirect("/admin/leave");
 
   }catch(err){
@@ -151,23 +177,37 @@ app.get("/login", redirectAuthenticated,(req, res) => {
 app.get("/employee/leave-list", ensureAuthenticated, permitRoles("employee"), async (req, res) => {
   try {
     const result = await pool.query(
-      "SELECT * FROM leave WHERE user_id=$1 ORDER BY created_at DESC",
+      "select lr.*,a.name as actioned_by_name from leave_req lr left join users a on lr.approved_by=a.id where lr.user_id=$1 order by lr.created_at desc",
       [req.user.id]
     );
-    
+    const res1=result.rows.map(row=>({
+
+      id: row.id,
+      reason: row.reason,
+      start: new Date(row.start_date),
+      end: new Date(row.end_date),
+      created_at: new Date(row.created_at),
+      status: row.status,
+      approved_by: row.actioned_by_name || null,
+      actioned_at: row.actioned_at ? new Date(row.actioned_at) : null,
+      rejection_reason: row.rejection_reason || null
+
+
+    }));
 
     // Pass the data as 'leave' to match your EJS
-    res.render("employee/leave-list", { leave: result.rows });
+    res.render("employee/leave-list", { leave: res1 });
 
   } catch (err) {
     console.log(err.message);
-    req.flash("error", "Unable to fetch leave list.");
+    req.flash("err_msg", "Unable to fetch leave list.");
     res.redirect("/employee/dashboard");
   }
 });
 
-app.get("/logout",ensureAuthenticated,(req,res,next)=>{
-  req.logOut(function(err){
+
+app.get("/logout",(req,res,next)=>{
+  req.logout(function(err){
     if(err){
       return next(err);
     }
@@ -205,22 +245,14 @@ app.post("/register", async (req, res) => {
       ]);
       if (result.rows.length > 0) {
         error.push({ message: "mail already exists" });
-        return res.render("register", { error }); //if something is wrong we stay ain the register page
+        return res.render("register", { error }); 
       }
       await pool.query(
         "insert into users (name,email,password,role) values ($1,$2,$3,$4)",
         [name, email, hashpass,"employee"]
       );
       req.flash("success_msg","you are successfully registered");
-      return res.redirect("login");
-
-
-
-
-      //while redirecting ejs ant readd the message so we need flash which needs session
-     
-
-      
+      return res.redirect("/login");
     } catch (err) {
       console.log(err.message);
       return res.send(err.message);
@@ -240,45 +272,57 @@ app.post("/login",passport.authenticate("local",{
   failureFlash:true
 }));
   //req.user=info about currently logged in user
-app.get("/employee/leave-apply",ensureAuthenticated,permitRoles("employee"),(req,res)=>{
-  res.render("employee/leave-apply");
-})
+app.get("/employee/leave-apply",ensureAuthenticated,permitRoles("employee"),async(req,res)=>{
+  try{
+    const leavetaken=await pool.query("select count(*) as total from leave_req where user_id=$1",[req.user.id]);
+    const totalleave=leavetaken.rows[0].total;
+    return res.render("employee/leave-apply",{totalleave,success_msg:req.flash("success_msg"),err_msg:req.flash("err_msg")});
+
+
+  }catch(err){
+    console.log(err.msg);
+    req.flash("err_msg","unable to load a new page");
+    return res.redirect("/employee/leave-apply");
+  }
+
+});
 app.post("/employee/leave-apply",ensureAuthenticated,permitRoles("employee"),async(req,res)=>{
-  const{sdate,edate,reason}=req.body;
-  if(!sdate||!edate){
-    req.flash("error","starting and ending date is missing here");
+  const{sdate,edate,reason} =req.body;
+  if(!sdate || !edate ){
+    req.flash("err_msg","starting and ending date is required for this field")
     return res.redirect("/employee/leave-apply");
   }
   try{
-    
-    await pool.query(
-      "insert into leave (user_id,start_date,end_date,reason) values($1,$2,$3,$4)",[req.user.id,sdate,edate,reason]
-    );
-    req.flash("success_msg","leave applied successfully");
-    res.redirect("/employee/leave-list");
+    const leavetaken=await pool.query("select count(*) as total from leave_req where user_id=$1  ",[req.user.id]); //how many times dat personn or id occured
+    const countleave=Number(leavetaken.rows[0].total);
+
+
+    if(countleave>20){
+      req.flash("err_msg","Sorry,you have exceeded your leave request limit");
+      return res.redirect("/employee/leave-apply");
+
+    }
+    const pending=await pool.query("select count(*) as total from leave_req where user_id=$1 and status='pending'",[req.user.id]);
+    const countpending=Number(pending.rows[0].total);
+    if(countpending>0){
+      req.flash("err_msg","you already have a pending leave. wait for its approval");
+      return res.redirect("/employee/leave-apply");
+    }
+    await pool.query("insert into leave_req(user_id,start_date,end_date,reason,status) values ($1,$2,$3,$4,'pending')",[req.user.id,sdate,edate,reason]);
+    req.flash("success_msg","successfully applied the leave request");
+    return res.redirect("/employee/leave-apply");
+
+
 
   }catch(err){
     console.log(err.message);
-    res.redirect("/employee/leave-apply");
-
+    return res.redirect("/employee/leave-apply");
   }
+
 })
 
 
-
-
 app.listen(port, () => console.log("server is connected"));
-
-
-//express receives the req signals us the royute we go to the route then in the passport it verifies and authenticates results send
-//back to the express then the message is hwon by the ejs file to show in the frontend
-
-
-
-//Express receives the request → Passport verifies credentials → Express decides where to redirect → Flash stores messages → EJS displays them
-
-
-
 
 
 

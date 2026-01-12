@@ -3,36 +3,164 @@
 <head>
   <meta charset="UTF-8">
   <title>Admin Leave Management</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f8;
+      margin: 30px;
+    }
+
+    h2 {
+      color: #333;
+    }
+
+    a {
+      text-decoration: none;
+      color: #007bff;
+      margin-right: 15px;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 20px;
+      background-color: #fff;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #ddd;
+      text-align: left;
+    }
+
+    th {
+      background-color: #007bff;
+      color: white;
+    }
+
+    tr:nth-child(even) {
+      background-color: #f2f2f2;
+    }
+
+    select, input[type="text"], button {
+      padding: 6px 10px;
+      margin: 5px 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      background-color: #28a745;
+      color: white;
+      cursor: pointer;
+      border: none;
+    }
+
+    button:hover {
+      background-color: #218838;
+    }
+
+    .reject-btn {
+      background-color: #dc3545;
+    }
+
+    .reject-btn:hover {
+      background-color: #c82333;
+    }
+
+    .status-badge {
+      padding: 4px 10px;
+      border-radius: 5px;
+      color: #fff;
+      font-weight: bold;
+    }
+
+    .pending { background-color: #ffc107; color: #333; }
+    .approved { background-color: #28a745; }
+    .rejected { background-color: #dc3545; }
+
+    footer {
+      margin-top: 40px;
+      font-size: 0.9em;
+      color: #666;
+    }
+  </style>
 </head>
 <body>
-  
 
-  <h2>Leave requests</h2>
-  <%if(leaves.length==0){ %>
-    <p> No pending leave requests found</p>
-  <%}else{ %>
-    <%leaves.forEach(element=>{%>
-      <p><strong>employee:</strong><%=element.employee_name %></p>
-      <p><strong>From:</strong><%= element.start_date.toDateString() %></p>
-      <P><strong>To:</strong><%= element.end_date.toDateString() %></P>
-      <p><strong>Reason:</strong><%=element.reason %></p>
-      <p><strong>Status:</strong><%=element.status %></p>
-      <P><strong>Applied On:</strong><%=element.created_at.toDateString() %></P>
+  <h2>Leave Requests</h2>
 
-      <%if(element.status=="pending"){%>
-      <form action="/admin/leave/approve/<%= element.id %>"method="post"> <button type="submit">Approve</button></form>
-      <form action="/admin/leave/reject/<%= element.id %>"method="post"><button type="submit">Reject</button></form>
+  <form action="/admin/leave" method="get">
+    <label for="options">Choose status:</label>
+    <select name="status" id="options">
+      <option value="all" <%= filter === 'all' ? 'selected' : '' %>>All</option>
+      <option value="pending" <%= filter === 'pending' ? 'selected' : '' %>>Pending</option>
+      <option value="approved" <%= filter === 'approved' ? 'selected' : '' %>>Approved</option>
+      <option value="rejected" <%= filter === 'rejected' ? 'selected' : '' %>>Rejected</option>
+    </select>
+    <button type="submit">Filter</button>
+  </form>
 
-    <%}%>
+  <% if (leaves.length === 0) { %>
+    <p>No leave requests found.</p>
+  <% } else { %>
+    <table>
+      <thead>
+        <tr>
+          <th>Employee</th>
+          <th>From</th>
+          <th>To</th>
+          <th>Reason</th>
+          <th>Status</th>
+          <th>Applied On</th>
+          <th>Action</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% leaves.forEach(element => { %>
+          <tr>
+            <td><%= element.employee_name %></td>
+            <td><%= element.start_date.toDateString() %></td>
+            <td><%= element.end_date.toDateString() %></td>
+            <td><%= element.reason %></td>
+            <td>
+              <span class="status-badge <%= element.status.toLowerCase() %>">
+                <%= element.status %>
+              </span>
+            </td>
+            <td><%= element.created_at.toDateString() %></td>
+            <td>
+              <% if(element.status.toLowerCase() === 'pending') { %>
+                <form action="/admin/leave/approve/<%= element.id %>" method="post" style="display:inline-block;">
+                  <button type="submit">Approve</button>
+                </form>
+                <form action="/admin/leave/reject/<%= element.id %>" method="post" style="display:inline-block;">
+                  <input type="text" name="reason" placeholder="Reason" required>
+                  <button type="submit" class="reject-btn">Reject</button>
+                </form>
+              <% } else { %>
+                <%= element.actioned_by || 'N/A' %>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+  <% } %>
 
-    <%})%>
-    
-  <%}%>
-
-
-  
+  <br>
   <a href="/admin/dashboard">Back to Dashboard</a>
-  <br><a href="/admin/users">Manage Users</a>
-  <br><a href="/logout">Logout</a>
+  <a href="/admin/users">Manage Users</a>
+  <a href="/logout">Logout</a>
+
+  <footer>
+    © 2025 OfficeCore
+  </footer>
+
 </body>
 </html>

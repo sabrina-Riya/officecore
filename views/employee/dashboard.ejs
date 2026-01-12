@@ -1,35 +1,89 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OfficeCore Employee Dashboard</title>
-    
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>OfficeCore Employee Dashboard</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f8;
+      margin: 30px;
+    }
+
+    h2 {
+      color: #333;
+    }
+
+    a {
+      text-decoration: none;
+      color: #007bff;
+      margin-right: 15px;
+    }
+
+    a:hover {
+      text-decoration: underline;
+    }
+
+    .card {
+      background-color: #fff;
+      padding: 20px;
+      margin-top: 20px;
+      width: 400px;
+      border-radius: 8px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+
+    .card h3 {
+      margin-top: 0;
+      color: #555;
+    }
+
+    ul {
+      list-style: none;
+      padding-left: 0;
+    }
+
+    li {
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+    }
+
+    li:last-child {
+      border-bottom: none;
+    }
+
+    footer {
+      margin-top: 30px;
+      font-size: 0.9em;
+      color: #666;
+    }
+  </style>
 </head>
 <body>
-    
-            
-    <a href="/logout">logout</a> <!--<a> tag normally contains get method-->
-            
-    <h2> welcome <%= user %> to OfficeCore's Dashboard</h2>
-    <section>
-      <h3> Leave Summary</h3>
-      <ul>
-        <li> total leaves taken:<%= Totalleave%> </li>
-        
-        <li>Approved leaves:<%= approvedLeave%></li>
-        <li>Rejected leaves:<%= rejectedLeave%></li>
-      </ul>
-    </section>
 
-    <br><a href="/employee/leave-apply">Apply for leave</a>
-    <br><a href="/employee/leave-list">view Leave request</a>
-        
-    
+  <a href="/logout">Logout</a>
 
-    <footer>
-        <br><br><p>© 2025 OfficeCore</p>
-    </footer>
+  <h2>Welcome <%= user %> to OfficeCore's Dashboard</h2>
+
+  <div class="card">
+    <h3>Leave Summary</h3>
+    <ul>
+      <li>Total leaves taken: <%= totalleave %></li>
+      <li>Approved leaves: <%= approvedLeave %></li>
+      <li>Rejected leaves: <%= rejectedLeave %></li>
+    </ul>
+  </div>
+
+  <br>
+  <a href="/employee/leave-apply">Apply for leave</a>
+  <a href="/employee/leave-list">View leave requests</a>
+
+  <footer>
+    © 2025 OfficeCore
+  </footer>
+
 </body>
 </html>
