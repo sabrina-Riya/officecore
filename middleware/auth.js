@@ -32,6 +32,7 @@ function permitRoles(...allowedRoles){
   }
 }
 
+
 module.exports={
   redirectAuthenticated,
   ensureAuthenticated,

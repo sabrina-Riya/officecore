@@ -13,6 +13,10 @@ function initialize(passport){
       }
       if(res.rows.length>0){
         const user=res.rows[0];
+
+      if(!user.is_active){
+        return done(null,false,{message : "your account is deactivated.contact to your admin"})
+      }
         
         bcrypt.compare(password,user.password,(err,isMatch)=>{
           if(err){

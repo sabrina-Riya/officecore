@@ -150,19 +150,47 @@ app.post("/admin/leave/reject/:id",ensureAuthenticated,permitRoles("admin"),asyn
 })
 
 
-app.get("/admin/users", ensureAuthenticated, permitRoles("admin"),async(req, res) => {
-  try{
-    const result=await pool.query("select * from users ");
-    res.render("admin/users",{element:result.rows});
-
-  }catch(err){
+app.get("/admin/users", ensureAuthenticated, permitRoles("admin"), async (req, res) => {
+  try {
+    const result = await pool.query("select * from users");
+    res.render("admin/users", {
+      element: result.rows,
+      success_msg: req.flash("success_msg"),
+      err_msg: req.flash("err_msg")
+    });
+  } catch (err) {
     console.log(err.message);
-    req.flash("err_msg","unable to fetch user");
+    req.flash("err_msg", "unable to fetch user");
     res.redirect("/admin/dashboard");
-
   }
 });
 
+app.post("/admin/users/:id",ensureAuthenticated,permitRoles("admin"),async(req,res)=>{
+  console.log("POST received for user ID:", req.params.id); // <--- add this
+  const userid=req.params.id;
+  const adminid=req.user.id;
+  try{
+    const result=await pool.query("select id , is_active from users where id=$1",[userid]);
+    if(result.rows.length===0){
+      req.flash("err_msg","user not found ");
+      return res.redirect("/admin/users");
+    }
+    const targetuser=result.rows[0];
+    if(targetuser.id===adminid){
+      req.flash("err_msg","you can not deactivate yourself")
+      return res.redirect("/admin/users");
+    }
+    const newstatus=!result.rows[0].is_active; //to check the opposite of the role by default active so !active=false
+    await pool.query("update users set is_active=$1 where id=$2 ",[newstatus,userid]);
+    req.flash("success_msg",newstatus?"user activated successfully":"user deactivated succcessfully");
+    return res.redirect("/admin/users");
+
+  }catch(err){
+    console.log(err.message);
+    req.flash("err_msg","unable to update user status");
+    res.redirect("/admin/users");
+  }
+})
 //generalise
 app.get("/", (req, res) => {
   res.render("index");
@@ -286,6 +314,34 @@ app.get("/employee/leave-apply",ensureAuthenticated,permitRoles("employee"),asyn
   }
 
 });
+app.post("/employee/leave/cancel/:id",ensureAuthenticated,permitRoles("employee"), async(req,res)=>{
+  const leaveid=req.params.id;
+  const userid=req.user.id;
+  try{
+    const leavesearch=await pool.query("select * from leave_req where id=$1 and user_id=$2",[leaveid,userid]);
+    if(leavesearch.rows.length==0){
+      req.flash("err_msg","Leave not found or allowed");
+      return res.redirect("/employee/leave-list");
+    }
+    const rowleave=leavesearch.rows[0];
+    if(rowleave.status!=='pending'){
+      req.flash("err_msg","cannot cancel this request");
+      return res.redirect("/employee/leave-list");
+    }
+    await pool.query("update leave_req set status='cancelled' where id=$1",[leaveid]);
+    req.flash("success_msg","Leave cancelled successfully ");
+    res.redirect("/employee/leave-list");
+  }catch(err){
+    console.log(err.message);
+    req.flash("err_msg","something went wrong");
+    res.redirect("/employee/leave-list");
+  }
+
+})
+
+
+
+
 app.post("/employee/leave-apply",ensureAuthenticated,permitRoles("employee"),async(req,res)=>{
   const{sdate,edate,reason} =req.body;
   if(!sdate || !edate ){
