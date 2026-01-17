@@ -2,105 +2,76 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Employee Leave List</title>
-
+  <title>Leave List</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f6f8;
-      padding: 40px;
-    }
-    h2 { color: #333; margin-bottom: 20px; }
-    table {
-      width: 100%;
-      max-width: 900px;
-      border-collapse: collapse;
-      background-color: #fff;
-      box-shadow: 0 0 10px rgba(0,0,0,0.1);
-      margin-bottom: 30px;
-    }
+    body { font-family: Arial; margin: 30px; background: #f4f6f8; }
+    table { width: 100%; border-collapse: collapse; background: #fff; margin-top: 20px; }
     th, td { padding: 12px; border-bottom: 1px solid #ddd; }
-    th { background-color: #007bff; color: white; }
-    tr:nth-child(even) { background-color: #f2f2f2; }
-
-    .status-pending { color: orange; font-weight: bold; }
-    .status-approved { color: green; font-weight: bold; }
-    .status-rejected { color: red; font-weight: bold; }
-    .status-cancelled { color: gray; font-weight: bold; }
-
-    .actions { font-size: 14px; color: #555; }
-    a { text-decoration: none; color: #007bff; margin-right: 15px; }
+    th { background: #007bff; color: #fff; }
+    tr.pending { background-color: #fff3cd; }
+    tr.approved { background-color: #d4edda; }
+    tr.rejected { background-color: #f8d7da; }
+    a { text-decoration: none; color: #007bff; margin-right: 10px; }
+    .success { color: green; margin-bottom: 10px; }
+    .error { color: red; margin-bottom: 10px; }
+    button { padding: 6px 12px; border: none; border-radius: 4px; cursor: pointer; }
   </style>
 </head>
-
 <body>
 
-<h2>Your Employee Leave List</h2>
+<h2>Your Leave Requests</h2>
 
-<% if (leave.length === 0) { %>
-  <div>No record of leave application found.</div>
-<% } else { %>
-
-<table>
-  <tr>
-    <th>ID</th>
-    <th>Start Date</th>
-    <th>End Date</th>
-    <th>Reason</th>
-    <th>Status</th>
-    <th>Applied On</th>
-    <th>Action</th>
-  </tr>
-
-  <% leave.forEach(item => { %>
-    <tr>
-      <td><%= item.id %></td>
-      <td><%= item.start.toDateString() %></td>
-      <td><%= item.end.toDateString() %></td>
-      <td><%= item.reason %></td>
-
-      <td class="status-<%= item.status %>">
-        <%= item.status %>
-      </td>
-
-      <td><%= item.created_at.toDateString() %></td>
-
-      <td class="actions">
-
-        <% if (item.status === 'pending') { %>
-
-          <form action="/employee/leave/cancel/<%= item.id %>" method="post">
-            <button type="submit">Cancel Request</button>
-          </form>
-
-        <% } else if (item.status === 'cancelled') { %>
-
-          Cancelled by you
-
-        <% } else { %>
-
-          By: <%= item.approved_by %><br>
-
-          <% if (item.actioned_at) { %>
-            On: <%= item.actioned_at.toDateString() %>
-          <% } %>
-
-          <% if (item.status === 'rejected') { %>
-            <br>Reason: <%= item.rejection_reason %>
-          <% } %>
-
-        <% } %>
-
-      </td>
-    </tr>
-  <% }) %>
-
-</table>
-
+<!-- Flash messages -->
+<% if (success_msg && success_msg.length > 0) { %>
+  <div class="success"><%= success_msg %></div>
 <% } %>
 
-<a href="/employee/leave-apply">Apply for Leave</a>
-<a href="/employee/dashboard">Back to Dashboard</a>
+<% if (err_msg && err_msg.length > 0) { %>
+  <% err_msg.forEach(e => { %>
+    <div class="error"><%= e %></div>
+  <% }) %>
+<% } %>
+
+<table>
+  <thead>
+    <tr>
+      <th>Start Date</th>
+      <th>End Date</th>
+      <th>Reason</th>
+      <th>Status</th>
+      <th>Approved By</th>
+      <th>Action</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% leave.forEach(l => { %>
+      <tr class="<%= l.status %>">
+        <td><%= l.start.toISOString().split('T')[0] %></td>
+        <td><%= l.end.toISOString().split('T')[0] %></td>
+        <td><%= l.reason %></td>
+        <td><%= l.status %></td>
+        <td><%= l.approved_by || "-" %></td>
+        <td>
+          <% if (l.status === 'pending') { %>
+            <!-- Edit button links to the edit form -->
+            <a href="/employee/leave/edit/<%= l.id %>">Edit</a>
+
+            <!-- Cancel leave form -->
+            <form action="/employee/leave/cancel/<%= l.id %>" method="POST" style="display:inline;">
+              <button type="submit">Cancel</button>
+            </form>
+          <% } else { %>
+            -
+          <% } %>
+        </td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+
+<br>
+<a href="/employee/dashboard">⬅ Back to Dashboard</a>
+<a href="/logout">Logout</a>
 
 </body>
 </html>

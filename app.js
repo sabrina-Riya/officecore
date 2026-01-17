@@ -1,6 +1,7 @@
 const express = require("express");
 const app = express();
 const { pool } = require("./dbconfig");
+const logger=require('./logger');
 const bcrypt = require("bcrypt");
 const session=require("express-session");
 const flash = require("express-flash");
@@ -48,13 +49,13 @@ app.get("/employee/dashboard", ensureAuthenticated,permitRoles("employee"),async
 
 
   }catch(err){
-    console.log(err.message);
+    logger.error(`Failed to fetch users: ${err.message}`);
     res.redirect("/");
   }
   
 });
 
-//for admin dashboard
+
 app.get("/admin/dashboard", ensureAuthenticated,permitRoles("admin"),async(req, res) => {
   try{
     const totUser=await pool.query("select count(*) from users");
@@ -79,13 +80,12 @@ app.get("/admin/dashboard", ensureAuthenticated,permitRoles("admin"),async(req, 
 
 
   }catch(err){
-    console.log(err.message);
+    logger.error(`Failed to fetch users:${err.message}`);
     req.flash("err_msg","unable to load");
     res.redirect("/")
   }
 });
-//leave management
-//viewing all the rows
+
 app.get("/admin/leave",ensureAuthenticated,permitRoles("admin"),async(req,res)=>{
   const checkstatus=req.query.status;
   const filter=checkstatus||"all";
@@ -110,15 +110,14 @@ app.get("/admin/leave",ensureAuthenticated,permitRoles("admin"),async(req,res)=>
     res.render("admin/leave",{leaves:result.rows,filter});
 
   }catch(err){
-    console.log(err.message);
+    logger.error(`Failed to fetch users:${err.message}`);
     req.flash("err_msg","unable to fetch your request");
     res.redirect("/admin/dashboard");
   }
 
 })
 
-//approve => here the admin/leave/approve/:id comes from the form i submitted=action="/admin/leave/approve/<%= element.id %>"
-//3 of these get combined together
+
 
 app.post("/admin/leave/approve/:id",ensureAuthenticated,permitRoles("admin"),async(req,res)=>{
   const leaveid=req.params.id;
@@ -128,11 +127,43 @@ app.post("/admin/leave/approve/:id",ensureAuthenticated,permitRoles("admin"),asy
     res.redirect("/admin/leave");
 
   }catch(err){
-    console.log(err.message);
+    logger.error(`Failed to fetch users:${err.message}`);
     res.redirect("/admin/leave")
   }
 
 })
+// Show leave apply form
+app.get("/employee/leave-apply", ensureAuthenticated, permitRoles("employee"), (req, res) => {
+  res.render("employee/leave-apply", {
+    err_msg: [],
+    success_msg: []
+  });
+});
+
+// Handle leave apply form submission
+app.post("/employee/leave-apply", ensureAuthenticated, permitRoles("employee"), async (req, res) => {
+  const { sdate, edate, reason } = req.body;
+  let errors = [];
+
+  if (!sdate || !edate || !reason) errors.push("All fields are required");
+  if (new Date(sdate) > new Date(edate)) errors.push("Start date cannot be after end date");
+
+  if (errors.length > 0) {
+    return res.render("employee/leave-apply", { err_msg: errors, success_msg: [] });
+  }
+
+  try {
+    await pool.query(
+      "INSERT INTO leave_req (user_id, start_date, end_date, reason, status, created_at) VALUES ($1,$2,$3,$4,'pending',NOW())",
+      [req.user.id, sdate, edate, reason]
+    );
+    res.render("employee/leave-apply", { err_msg: [], success_msg: ["Leave request submitted"] });
+  } catch (err) {
+    logger.error(`Failed to fetch users:${err.message}`);
+    res.render("employee/leave-apply", { err_msg: ["Failed to submit leave"], success_msg: [] });
+  }
+});
+
 
 //reject
 app.post("/admin/leave/reject/:id",ensureAuthenticated,permitRoles("admin"),async(req,res)=>{
@@ -144,26 +175,12 @@ app.post("/admin/leave/reject/:id",ensureAuthenticated,permitRoles("admin"),asyn
     res.redirect("/admin/leave");
 
   }catch(err){
-    console.log(err.message);
+    logger.error(`Failed to fetch users:${err.message}`);
     res.redirect("/admin/leave");
   }
 })
 
 
-app.get("/admin/users", ensureAuthenticated, permitRoles("admin"), async (req, res) => {
-  try {
-    const result = await pool.query("select * from users");
-    res.render("admin/users", {
-      element: result.rows,
-      success_msg: req.flash("success_msg"),
-      err_msg: req.flash("err_msg")
-    });
-  } catch (err) {
-    console.log(err.message);
-    req.flash("err_msg", "unable to fetch user");
-    res.redirect("/admin/dashboard");
-  }
-});
 
 app.post("/admin/users/:id",ensureAuthenticated,permitRoles("admin"),async(req,res)=>{
   console.log("POST received for user ID:", req.params.id); // <--- add this
@@ -186,7 +203,7 @@ app.post("/admin/users/:id",ensureAuthenticated,permitRoles("admin"),async(req,r
     return res.redirect("/admin/users");
 
   }catch(err){
-    console.log(err.message);
+    logger.error(`Failed to fetch users:${err.message}`);
     req.flash("err_msg","unable to update user status");
     res.redirect("/admin/users");
   }
@@ -222,12 +239,18 @@ app.get("/employee/leave-list", ensureAuthenticated, permitRoles("employee"), as
 
 
     }));
+    res.render("employee/leave-list", {
 
-    // Pass the data as 'leave' to match your EJS
-    res.render("employee/leave-list", { leave: res1 });
+      leave: res1,
+      success_msg: req.flash("success_msg"),
+      err_msg: req.flash("err_msg")
+    }
+    
+    );
+
 
   } catch (err) {
-    console.log(err.message);
+    logger.error(`Failed to fetch users:${err.message}`);
     req.flash("err_msg", "Unable to fetch leave list.");
     res.redirect("/employee/dashboard");
   }
@@ -282,7 +305,7 @@ app.post("/register", async (req, res) => {
       req.flash("success_msg","you are successfully registered");
       return res.redirect("/login");
     } catch (err) {
-      console.log(err.message);
+      logger.error(`Failed to fetch users:${err.message}`);
       return res.send(err.message);
     }
   }
@@ -299,87 +322,200 @@ app.post("/login",passport.authenticate("local",{
   failureRedirect:"/login",
   failureFlash:true
 }));
-  //req.user=info about currently logged in user
-app.get("/employee/leave-apply",ensureAuthenticated,permitRoles("employee"),async(req,res)=>{
-  try{
-    const leavetaken=await pool.query("select count(*) as total from leave_req where user_id=$1",[req.user.id]);
-    const totalleave=leavetaken.rows[0].total;
-    return res.render("employee/leave-apply",{totalleave,success_msg:req.flash("success_msg"),err_msg:req.flash("err_msg")});
 
 
-  }catch(err){
-    console.log(err.msg);
-    req.flash("err_msg","unable to load a new page");
-    return res.redirect("/employee/leave-apply");
+app.get("/employee/leave/edit/:id", ensureAuthenticated, permitRoles("employee"), async (req, res) => {
+  const leaveid = req.params.id;
+  const userid = req.user.id;
+
+  try {
+    const result = await pool.query(
+      "SELECT * FROM leave_req WHERE id=$1 AND user_id=$2",
+      [leaveid, userid]
+    );
+
+    if (result.rows.length === 0) {
+      req.flash("err_msg", "Leave not found");
+      return res.redirect("/employee/leave-list");
+    }
+
+    const leave = result.rows[0];
+
+    if (leave.status !== "pending") {
+      req.flash("err_msg", "Only pending leaves can be edited");
+      return res.redirect("/employee/leave-list");
+    }
+
+    res.render("employee/edit-leave", {
+      leave,
+      err_msg: [],
+      success_msg: []
+    });
+
+  } catch (err) {
+    logger.error(`Failed to fetch users:${err.message}`);
+    req.flash("err_msg", "Cannot edit the leave request");
+    res.redirect("/employee/leave-list");
   }
-
 });
-app.post("/employee/leave/cancel/:id",ensureAuthenticated,permitRoles("employee"), async(req,res)=>{
-  const leaveid=req.params.id;
-  const userid=req.user.id;
-  try{
-    const leavesearch=await pool.query("select * from leave_req where id=$1 and user_id=$2",[leaveid,userid]);
-    if(leavesearch.rows.length==0){
-      req.flash("err_msg","Leave not found or allowed");
-      return res.redirect("/employee/leave-list");
+
+
+app.post("/employee/leave/edit/:id", ensureAuthenticated, permitRoles("employee"), async (req, res) => {
+  const leaveid = req.params.id;
+  const userid = req.user.id;
+  const { sdate, edate, reason } = req.body;
+
+  let error = [];
+  if (!sdate || !edate || !reason) error.push("All fields are required");
+  if (new Date(sdate) > new Date(edate)) error.push("Start date cannot be after end date");
+
+  if (error.length > 0) {
+    return res.render("employee/edit-leave", {
+      leave: { id: leaveid, start_date: sdate, end_date: edate, reason },
+      err_msg: error,
+      success_msg: []
+    });
+  }
+
+  try {
+    const result = await pool.query(
+      "UPDATE leave_req SET start_date=$1, end_date=$2, reason=$3 WHERE id=$4 AND user_id=$5 AND status='pending' RETURNING *",
+      [sdate, edate, reason, leaveid, userid]
+    );
+
+    if (result.rows.length === 0) {
+      return res.render("employee/edit-leave", {
+        leave: { id: leaveid, start_date: sdate, end_date: edate, reason },
+        err_msg: ["Cannot edit leave (maybe not pending)"],
+        success_msg: []
+      });
     }
-    const rowleave=leavesearch.rows[0];
-    if(rowleave.status!=='pending'){
-      req.flash("err_msg","cannot cancel this request");
-      return res.redirect("/employee/leave-list");
-    }
-    await pool.query("update leave_req set status='cancelled' where id=$1",[leaveid]);
-    req.flash("success_msg","Leave cancelled successfully ");
+
+    res.render("employee/edit-leave", {
+      leave: result.rows[0],
+      err_msg: [],
+      success_msg: ["Leave updated successfully"]
+    });
+
+  } catch (err) {
+    logger.error(`Failed to fetch users:${err.message}`);
+    req.flash("err_msg", "Unable to update leave");
     res.redirect("/employee/leave-list");
-  }catch(err){
-    console.log(err.message);
-    req.flash("err_msg","something went wrong");
-    res.redirect("/employee/leave-list");
   }
+});
 
-})
+app.post(
+  "/admin/users/role/:id",ensureAuthenticated,permitRoles("admin"),async (req, res) => {
+    const userid = parseInt(req.params.id);
+    const adminid = req.user.id;
 
+    try {
+      const result = await pool.query(
+        "SELECT id, role FROM users WHERE id = $1",
+        [userid]
+      );
 
+      if (result.rows.length === 0) {
+        req.flash("err_msg", "User not found");
+        return res.redirect("/admin/users");
+      }
 
+      
+      if (userid === adminid) {
+        req.flash("err_msg", "You cannot change your own role");
+        return res.redirect("/admin/users");
+      }
 
-app.post("/employee/leave-apply",ensureAuthenticated,permitRoles("employee"),async(req,res)=>{
-  const{sdate,edate,reason} =req.body;
-  if(!sdate || !edate ){
-    req.flash("err_msg","starting and ending date is required for this field")
-    return res.redirect("/employee/leave-apply");
-  }
-  try{
-    const leavetaken=await pool.query("select count(*) as total from leave_req where user_id=$1  ",[req.user.id]); //how many times dat personn or id occured
-    const countleave=Number(leavetaken.rows[0].total);
+      const currentRole = result.rows[0].role;
+      const newRole = currentRole === "admin" ? "employee" : "admin";
 
+      await pool.query(
+        "UPDATE users SET role = $1 WHERE id = $2",
+        [newRole, userid]
+      );
 
-    if(countleave>20){
-      req.flash("err_msg","Sorry,you have exceeded your leave request limit");
-      return res.redirect("/employee/leave-apply");
+      req.flash("success_msg", `Role changed to ${newRole}`);
+      return res.redirect("/admin/users");
 
+    } catch (err) {
+      logger.error(`Failed to fetch users:${err.message}`);
+      req.flash("err_msg", "Unable to change role");
+      return res.redirect("/admin/users");
     }
-    const pending=await pool.query("select count(*) as total from leave_req where user_id=$1 and status='pending'",[req.user.id]);
-    const countpending=Number(pending.rows[0].total);
-    if(countpending>0){
-      req.flash("err_msg","you already have a pending leave. wait for its approval");
-      return res.redirect("/employee/leave-apply");
-    }
-    await pool.query("insert into leave_req(user_id,start_date,end_date,reason,status) values ($1,$2,$3,$4,'pending')",[req.user.id,sdate,edate,reason]);
-    req.flash("success_msg","successfully applied the leave request");
-    return res.redirect("/employee/leave-apply");
-
-
-
-  }catch(err){
-    console.log(err.message);
-    return res.redirect("/employee/leave-apply");
   }
+);
 
-})
+app.get(
+  "/admin/users",
+  ensureAuthenticated,
+  permitRoles("admin"),
+  async (req, res) => {
+    try {
+      const result = await pool.query(
+        "SELECT * FROM users ORDER BY id ASC"
+      );
 
+      res.render("admin/users", {
+        users: result.rows,            
+        success_msg: req.flash("success_msg"),
+        err_msg: req.flash("err_msg")
+      });
 
+    } catch (err) {
+      logger.error(`Failed to fetch users:${err.message}`);
+      req.flash("err_msg", "Unable to fetch users");
+      res.redirect("/admin/dashboard");
+    }
+  }
+);
+// Show edit user form
+// Show edit user form
+app.get("/admin/users/edit/:id", ensureAuthenticated, permitRoles("admin"), async (req, res) => {
+  const userid = req.params.id;
+
+  try {
+    const result = await pool.query("SELECT id, name, email, role, is_active FROM users WHERE id=$1", [userid]);
+
+    if (result.rows.length === 0) {
+      req.flash("err_msg", "User not found");
+      return res.redirect("/admin/users");
+    }
+
+    const user = result.rows[0];
+
+    res.render("admin/edit-user", {
+      user,
+      success_msg: [],
+      err_msg: []
+    });
+
+  } catch (err) {
+    logger.error(`Failed to fetch users:${err.message}`);
+    req.flash("err_msg", "Cannot load edit form");
+    res.redirect("/admin/users");
+  }
+});
+
+// Handle edit user form submission
+app.post("/admin/users/edit/:id", ensureAuthenticated, permitRoles("admin"), async (req, res) => {
+  const userid = req.params.id;
+  const { name, email, role } = req.body;
+
+  try {
+    await pool.query(
+      "UPDATE users SET name=$1, email=$2, role=$3 WHERE id=$4",
+      [name, email, role, userid]
+    );
+    req.flash("success_msg", "User updated successfully");
+    res.redirect("/admin/users");
+
+  } catch (err) {
+    logger.error(`Failed to fetch users:${err.message}`);
+    req.flash("err_msg", "Unable to update user");
+    res.redirect("/admin/users");
+  }
+});
 app.listen(port, () => console.log("server is connected"));
-
 
 
 

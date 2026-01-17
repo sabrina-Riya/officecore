@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Edit Leave</title>
+
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      margin: 0;
+    }
+
+    .card {
+      background: #fff;
+      padding: 30px;
+      width: 420px;
+      border-radius: 10px;
+      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
+    }
+
+    h2 {
+      text-align: center;
+      margin-bottom: 25px;
+      color: #333;
+    }
+
+    label {
+      font-weight: bold;
+      display: block;
+      margin-bottom: 6px;
+      color: #555;
+    }
+
+    input[type="date"],
+    textarea {
+      width: 100%;
+      padding: 10px;
+      border-radius: 6px;
+      border: 1px solid #ccc;
+      margin-bottom: 18px;
+      font-size: 14px;
+    }
+
+    textarea {
+      resize: none;
+      height: 90px;
+    }
+
+    .error {
+      background: #ffe6e6;
+      color: #b30000;
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+
+    .success {
+      background: #e6ffea;
+      color: #007a1c;
+      padding: 10px;
+      border-radius: 5px;
+      margin-bottom: 10px;
+      font-size: 14px;
+    }
+
+    button {
+      width: 100%;
+      background: #007bff;
+      color: #fff;
+      border: none;
+      padding: 12px;
+      font-size: 16px;
+      border-radius: 6px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background: #0056b3;
+    }
+
+    .back {
+      display: block;
+      text-align: center;
+      margin-top: 18px;
+      text-decoration: none;
+      color: #007bff;
+      font-size: 14px;
+    }
+
+    .back:hover {
+      text-decoration: underline;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="card">
+    <h2>Edit Leave Request</h2>
+
+    <% if (err_msg.length > 0) { %>
+      <% err_msg.forEach(e => { %>
+        <div class="error"><%= e %></div>
+      <% }) %>
+    <% } %>
+
+    <% if (success_msg.length > 0) { %>
+      <% success_msg.forEach(e => { %>
+        <div class="success"><%= e %></div>
+      <% }) %>
+    <% } %>
+
+    <form action="/employee/leave/edit/<%= leave.id %>" method="POST">
+      <label>Start Date</label>
+      <input type="date" name="sdate"
+        value="<%= leave.start_date.toISOString().split('T')[0] %>" required>
+
+      <label>End Date</label>
+      <input type="date" name="edate"
+        value="<%= leave.end_date.toISOString().split('T')[0] %>" required>
+
+      <label>Reason</label>
+      <textarea name="reason" required><%= leave.reason %></textarea>
+
+      <button type="submit">Update Leave</button>
+    </form>
+
+    <a class="back" href="/employee/leave-list">⬅ Back to Leave List</a>
+  </div>
+</body>
+</html>
