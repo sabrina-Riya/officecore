@@ -8,28 +8,25 @@ const flash = require("express-flash");
 const passport=require("passport")
 const inipass=require("./passport/passportconfig");
 const {redirectAuthenticated,ensureAuthenticated,permitRoles}=require("./middleware/auth");
-
-
-
-
 const port = process.env.PORT || 4000;
 
-
 app.set("view engine", "ejs");
-app.use(express.urlencoded({ extended: false })); // send details of the post body from the frontend to the backend app.kjs
+app.use(express.urlencoded({ extended: false })); 
+
 app.use(
   session({
-    secret: process.env.SESSION_SECRET,
+    secret: process.env.SESSION_SECRET,  // <- REQUIRED
     resave: false,
     saveUninitialized: false
   })
 );
-app.use(passport.initialize()); //app.use middle ware is used for each request for everuthing but middleware like (req,res,next works for a specific call only)
-app.use(passport.session()); //initialise in express
+
+app.use(passport.initialize()); 
+app.use(passport.session());
 inipass(passport);
 
 
-app.use(flash()); //these type of middle ware app.use()order matters
+app.use(flash()); 
 
 
 //for employeewha
