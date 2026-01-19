@@ -1,3 +1,6 @@
+
+
+
 const express = require("express");
 const app = express();
 const { pool } = require("./dbconfig");
@@ -13,15 +16,22 @@ const port = process.env.PORT || 4000;
 app.set("view engine", "ejs");
 app.use(express.urlencoded({ extended: false })); 
 
+app.set("trust proxy", 1); // REQUIRED for Railway/Render
+
 app.use(
   session({
-    secret: process.env.SESSION_SECRET,  // <- REQUIRED
+    secret: process.env.SESSION_SECRET,
     resave: false,
-    saveUninitialized: false
+    saveUninitialized: false,
+    cookie: {
+      secure: false, // keep false (Railway uses proxy)
+      maxAge: 1000 * 60 * 60 * 24
+    }
   })
 );
 
-app.use(passport.initialize()); 
+
+app.use(passport.initialize());
 app.use(passport.session());
 inipass(passport);
 
@@ -512,12 +522,15 @@ app.post("/admin/users/edit/:id", ensureAuthenticated, permitRoles("admin"), asy
     res.redirect("/admin/users");
   }
 });
-app.listen(port, () => console.log("server is connected"));
+// ... all your existing routes here
 
+// Catch-all error handler (add this at the very end)
+app.use((err, req, res, next) => {
+  console.error("ERROR CAUGHT:", err); // prints the real error in Render logs
+  res.status(500).send("Internal Server Error: Check Logs"); // sends a simple message to the browser
+});
 
-
-
-
+app.listen(port, () => console.log(`Server is running on port ${port}`));
 
 
 
