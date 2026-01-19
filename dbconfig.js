@@ -1,23 +1,10 @@
 require("dotenv").config();
-const { Client } = require("pg");
+const { Pool } = require("pg");
 
-const getConnection = () => {
-  if (process.env.DATABASE_URL) {
-    // For Render
-    return new Client({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false },
-    });
-  } else {
-    // For local
-    return new Client({
-      host: process.env.DB_HOST,
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME,
-      port: process.env.DB_PORT || 5432,
-    });
-  }
-};
+// Use DATABASE_URL if available (Render provides it), otherwise fallback to local .env values
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL || `postgresql://${process.env.DB_USER}:${process.env.DB_PASSWORD}@${process.env.DB_HOST}:${process.env.DB_PORT}/${process.env.DB_NAME}`,
+  ssl: process.env.DATABASE_URL ? { rejectUnauthorized: false } : false, // SSL required on Render
+});
 
-module.exports = { getConnection };
+module.exports = { pool };
