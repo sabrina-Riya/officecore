@@ -1,76 +1,64 @@
-//for passport dont use theow err,might crash the server
+const LocalStrategy = require("passport-local").Strategy;
+const { getConnection } = require("../dbconfig");
+const bcrypt = require("bcrypt");
 
+function initialize(passport) {
+  // auth function
+  const authu = async (email, password, done) => {
+    const client = getConnection();
+    try {
+      await client.connect();  // connect to Postgres
 
-const localstrategy=require("passport-local").Strategy;
-const {pool}=require("../dbconfig");
-const bcrypt=require("bcrypt");
+      const res = await client.query(
+        "SELECT * FROM users WHERE email=$1",
+        [email]
+      );
 
-function initialize(passport){
-  const authu=(email,password,done)=>{
-    pool.query("select * from users where email=$1",[email],(err,res)=>{
-      if(err){
-        return done(err);
-      }
-      if(res.rows.length>0){
-        const user=res.rows[0];
-
-      if(!user.is_active){
-        return done(null,false,{message : "your account is deactivated.contact to your admin"})
-      }
-        
-        bcrypt.compare(password,user.password,(err,isMatch)=>{
-          if(err){
-            return done(err);
-          }
-          if(isMatch){
-            return done(null,user);
-          }
-          else{
-            return done(null,false,{message:"couldnot get your credential"});
-          }
-          
-        })
-      }else{
-        return done(null,false,{message:"no result found"});
-
-      }
-    })
-  }
-
-
-/* authu → defines the structure / “blueprint” of how to verify a user (email check, password compare).
-passport.use(new LocalStrategy(..., authu)) → activates /
- executes that blueprint within Passport, so it knows what to do whenever a login request comes in.*/
-
-
-  passport.use(new localstrategy({
-    usernameField:"email",
-    passwordField:"password"
-  },authu));
-
-
-
-  passport.serializeUser((user,done)=>{
-
-    done(null,user.id); //after the login succeeds passport decides to store the id just-What small piece of data should I store in the session so I remember this user?”
-
-  }
-  )
-
-  passport.deserializeUser((id,done)=>{
-    pool.query ("select * from users where id=$1",[id],(err,result)=>{
-      if(err){
-        return done(err);//inside passport err throwing is risky might crash server instead ***********return done(err)
-      }else{
-        return done(null,result.rows[0]);
+      if (res.rows.length === 0) {
+        return done(null, false, { message: "No user found" });
       }
 
-    });
-    
-  })
+      const user = res.rows[0];
 
-  
-  
-  
+      if (!user.is_active) {
+        return done(null, false, { message: "Your account is deactivated" });
+      }
+
+      const isMatch = await bcrypt.compare(password, user.password);
+
+      if (isMatch) return done(null, user);
+      else return done(null, false, { message: "Incorrect password" });
+
+    } catch (err) {
+      return done(err);
+    } finally {
+      await client.end(); // close connection
+    }
+  };
+
+  passport.use(
+    new LocalStrategy(
+      { usernameField: "email", passwordField: "password" },
+      authu
+    )
+  );
+
+  passport.serializeUser((user, done) => {
+    done(null, user.id);
+  });
+
+  passport.deserializeUser(async (id, done) => {
+    const client = getConnection();
+    try {
+      await client.connect();
+      const res = await client.query("SELECT * FROM users WHERE id=$1", [id]);
+      done(null, res.rows[0]);
+    } catch (err) {
+      done(err);
+    } finally {
+      await client.end();
+    }
+  });
 }
-module.exports=initialize;
+
+module.exports = initialize;
