@@ -1,17 +1,14 @@
 const LocalStrategy = require("passport-local").Strategy;
-const { getConnection } = require("../dbconfig");
+const { pool } = require("../dbconfig");
 const bcrypt = require("bcrypt");
 
 function initialize(passport) {
-  // auth function
   const authu = async (email, password, done) => {
-    const client = getConnection();
     try {
-      await client.connect();  // connect to Postgres
-
-      const res = await client.query(
+      const normalizedEmail = email.trim().toLowerCase();
+      const res = await pool.query(
         "SELECT * FROM users WHERE email=$1",
-        [email]
+        [normalizedEmail]
       );
 
       if (res.rows.length === 0) {
@@ -31,8 +28,6 @@ function initialize(passport) {
 
     } catch (err) {
       return done(err);
-    } finally {
-      await client.end(); // close connection
     }
   };
 
@@ -48,15 +43,11 @@ function initialize(passport) {
   });
 
   passport.deserializeUser(async (id, done) => {
-    const client = getConnection();
     try {
-      await client.connect();
-      const res = await client.query("SELECT * FROM users WHERE id=$1", [id]);
+      const res = await pool.query("SELECT * FROM users WHERE id=$1", [id]);
       done(null, res.rows[0]);
     } catch (err) {
       done(err);
-    } finally {
-      await client.end();
     }
   });
 }
