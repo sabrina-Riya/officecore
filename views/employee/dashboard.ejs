@@ -2,10 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <meta http-equiv="X-UA-Compatible" content="IE=edge">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>OfficeCore Employee Dashboard</title>
-
+  <title>Employee Dashboard</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -27,61 +24,79 @@
       text-decoration: underline;
     }
 
+    .cards {
+      display: flex;
+      gap: 20px;
+      margin-top: 25px;
+      flex-wrap: wrap;
+    }
+
     .card {
-      background-color: #fff;
+      background: #fff;
       padding: 20px;
-      margin-top: 20px;
-      width: 400px;
+      width: 200px;
+      text-align: center;
       border-radius: 8px;
       box-shadow: 0 3px 10px rgba(0,0,0,0.1);
     }
 
     .card h3 {
-      margin-top: 0;
+      margin: 0;
       color: #555;
     }
 
-    ul {
-      list-style: none;
-      padding-left: 0;
+    .card span {
+      display: inline-block;
+      margin-top: 10px;
+      background: #007bff;
+      color: #fff;
+      padding: 6px 12px;
+      border-radius: 6px;
+      font-weight: bold;
     }
 
-    li {
-      padding: 8px 0;
-      border-bottom: 1px solid #eee;
-    }
-
-    li:last-child {
-      border-bottom: none;
-    }
-
-    footer {
-      margin-top: 30px;
-      font-size: 0.9em;
-      color: #666;
-    }
+    .success { color: green; }
+    .error { color: red; }
   </style>
 </head>
 <body>
 
   <a href="/logout">Logout</a>
 
-  <h2>Welcome <%= user %> to OfficeCore's Dashboard</h2>
+  <!-- ✅ FIXED VARIABLE -->
+  <h2>Welcome <%= username %></h2>
 
-  <div class="card">
-    <h3>Leave Summary</h3>
-    <ul>
-      <li>Total leaves taken: <%= totalleave %></li>
-      <li>Approved leaves: <%= approvedLeave %></li>
-      <li>Rejected leaves: <%= rejectedLeave %></li>
-    </ul>
+  <% if (success_msg && success_msg.length > 0) { %>
+    <p class="success"><%= success_msg %></p>
+  <% } %>
+
+  <% if (err_msg && err_msg.length > 0) { %>
+    <p class="error"><%= err_msg %></p>
+  <% } %>
+
+  <div class="cards">
+    <div class="card">
+      <h3>Total Leaves</h3>
+      <span><%= totalleave %></span>
+    </div>
+
+    <div class="card">
+      <h3>Approved</h3>
+      <span><%= approvedLeave %></span>
+    </div>
+
+    <div class="card">
+      <h3>Rejected</h3>
+      <span><%= rejectedLeave %></span>
+    </div>
   </div>
 
-  <br>
-  <a href="/employee/leave-apply">Apply for leave</a>
-  <a href="/employee/leave-list">View leave requests</a>
+  <br><br>
 
-  <footer>
+  <a href="/employee/leave-apply">Apply for Leave</a>
+  <a href="/employee/leave-list">My Leave Requests</a>
+
+  <footer style="margin-top:40px;color:#666;">
     © 2025 OfficeCore
   </footer>
 

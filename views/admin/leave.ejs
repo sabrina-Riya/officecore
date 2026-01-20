@@ -1,166 +1,88 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8">
-  <title>Admin Leave Management</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f6f8;
-      margin: 30px;
-    }
+<meta charset="UTF-8">
+<title>Manage Leaves</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #f4f6f8; margin: 30px; }
+  h2 { color: #333; }
 
-    h2 {
-      color: #333;
-    }
+  table { width:100%; border-collapse: collapse; background:#fff; margin-top:20px; box-shadow:0 2px 8px rgba(0,0,0,0.1);}
+  th, td { padding:8px; border:1px solid #ccc; text-align:center; }
+  th { background:#007bff; color:#fff; }
 
-    a {
-      text-decoration: none;
-      color: #007bff;
-      margin-right: 15px;
-    }
+  button { padding:4px 8px; margin:2px; cursor:pointer; border:none; border-radius:4px; }
+  .approve { background:#28a745; color:#fff; }
+  .reject { background:#dc3545; color:#fff; }
+  input.reject-reason { width: 120px; padding: 3px; }
 
-    a:hover {
-      text-decoration: underline;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      margin-top: 20px;
-      background-color: #fff;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-    }
-
-    th, td {
-      padding: 12px;
-      border-bottom: 1px solid #ddd;
-      text-align: left;
-    }
-
-    th {
-      background-color: #007bff;
-      color: white;
-    }
-
-    tr:nth-child(even) {
-      background-color: #f2f2f2;
-    }
-
-    select, input[type="text"], button {
-      padding: 6px 10px;
-      margin: 5px 0;
-      border-radius: 5px;
-      border: 1px solid #ccc;
-    }
-
-    button {
-      background-color: #28a745;
-      color: white;
-      cursor: pointer;
-      border: none;
-    }
-
-    button:hover {
-      background-color: #218838;
-    }
-
-    .reject-btn {
-      background-color: #dc3545;
-    }
-
-    .reject-btn:hover {
-      background-color: #c82333;
-    }
-
-    .status-badge {
-      padding: 4px 10px;
-      border-radius: 5px;
-      color: #fff;
-      font-weight: bold;
-    }
-
-    .pending { background-color: #ffc107; color: #333; }
-    .approved { background-color: #28a745; }
-    .rejected { background-color: #dc3545; }
-
-    footer {
-      margin-top: 40px;
-      font-size: 0.9em;
-      color: #666;
-    }
-  </style>
+  .success { color: green; margin-bottom:10px; }
+  .error { color: red; margin-bottom:10px; }
+</style>
 </head>
 <body>
 
-  <h2>Leave Requests</h2>
+<h2>All Leave Requests</h2>
 
-  <form action="/admin/leave" method="get">
-    <label for="options">Choose status:</label>
-    <select name="status" id="options">
-      <option value="all" <%= filter === 'all' ? 'selected' : '' %>>All</option>
-      <option value="pending" <%= filter === 'pending' ? 'selected' : '' %>>Pending</option>
-      <option value="approved" <%= filter === 'approved' ? 'selected' : '' %>>Approved</option>
-      <option value="rejected" <%= filter === 'rejected' ? 'selected' : '' %>>Rejected</option>
-    </select>
-    <button type="submit">Filter</button>
-  </form>
+<!-- Flash Messages -->
+<% if (success_msg && success_msg.length) { %>
+  <div class="success"><%= success_msg %></div>
+<% } %>
+<% if (err_msg && err_msg.length) { %>
+  <div class="error"><%= err_msg %></div>
+<% } %>
 
-  <% if (leaves.length === 0) { %>
-    <p>No leave requests found.</p>
-  <% } else { %>
-    <table>
-      <thead>
+<table>
+  <thead>
+    <tr>
+      <th>ID</th>
+      <th>Employee</th>
+      <th>Start Date</th>
+      <th>End Date</th>
+      <th>Reason</th>
+      <th>Status</th>
+      <th>Rejection Reason</th>
+      <th>Actioned By</th> <!-- NEW COLUMN -->
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% if (leaves && leaves.length > 0) { %>
+      <% leaves.forEach(l => { %>
         <tr>
-          <th>Employee</th>
-          <th>From</th>
-          <th>To</th>
-          <th>Reason</th>
-          <th>Status</th>
-          <th>Applied On</th>
-          <th>Action</th>
+          <td><%= l.id %></td>
+          <td><%= l.employee_name %></td>
+          <td><%= new Date(l.start_date).toISOString().split('T')[0] %></td>
+          <td><%= new Date(l.end_date).toISOString().split('T')[0] %></td>
+          <td><%= l.reason %></td>
+          <td><%= l.status %></td>
+          <td><%= l.rejection_reason || '-' %></td>
+          <td><%= l.actioned_by || '-' %></td> <!-- SHOW ADMIN -->
+          <td>
+            <% if (l.status === "pending") { %>
+              <!-- Approve Form -->
+              <form action="/admin/leave/approve/<%= l.id %>" method="POST" style="display:inline;">
+                <button class="approve" type="submit">Approve</button>
+              </form>
+
+              <!-- Reject Form -->
+              <form action="/admin/leave/reject/<%= l.id %>" method="POST" style="display:inline;">
+                <input type="text" name="reason" class="reject-reason" placeholder="Reason" required>
+                <button class="reject" type="submit">Reject</button>
+              </form>
+            <% } %>
+          </td>
         </tr>
-      </thead>
-      <tbody>
-        <% leaves.forEach(element => { %>
-          <tr>
-            <td><%= element.employee_name %></td>
-            <td><%= element.start_date.toDateString() %></td>
-            <td><%= element.end_date.toDateString() %></td>
-            <td><%= element.reason %></td>
-            <td>
-              <span class="status-badge <%= element.status.toLowerCase() %>">
-                <%= element.status %>
-              </span>
-            </td>
-            <td><%= element.created_at.toDateString() %></td>
-            <td>
-              <% if(element.status.toLowerCase() === 'pending') { %>
-                <form action="/admin/leave/approve/<%= element.id %>" method="post" style="display:inline-block;">
-                  <button type="submit">Approve</button>
-                </form>
-                <form action="/admin/leave/reject/<%= element.id %>" method="post" style="display:inline-block;">
-                  <input type="text" name="reason" placeholder="Reason" required>
-                  <button type="submit" class="reject-btn">Reject</button>
-                </form>
-              <% } else { %>
-                <%= element.actioned_by || 'N/A' %>
-              <% } %>
-            </td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
-  <% } %>
+      <% }) %>
+    <% } else { %>
+      <tr><td colspan="9">No leave requests found</td></tr>
+    <% } %>
+  </tbody>
+</table>
 
-  <br>
-  <a href="/admin/dashboard">Back to Dashboard</a>
-  <a href="/admin/users">Manage Users</a>
-  <a href="/logout">Logout</a>
-
-  <footer>
-    © 2025 OfficeCore
-  </footer>
+<br>
+<a href="/admin/dashboard">⬅ Back to Dashboard</a>
+<a href="/logout">Logout</a>
 
 </body>
 </html>

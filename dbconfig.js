@@ -1,11 +1,26 @@
 require("dotenv").config();
-const { Pool } = require("pg");
+const { Pool, Client } = require("pg");
+
+const isProd = process.env.NODE_ENV === "production";
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL, // make sure this is your external URL
-  ssl: {
-    rejectUnauthorized: false, // required for Render-hosted Postgres
-  },
+  host: isProd ? process.env.DB_HOST : "localhost",
+  user: isProd ? process.env.DB_USER : "postgres",
+  password: isProd ? process.env.DB_PASSWORD : "123",
+  database: isProd ? process.env.DB_NAME : "officecore",
+  port: isProd ? process.env.DB_PORT : 5432,
+  ssl: isProd ? { rejectUnauthorized: false } : false
 });
 
-module.exports = { pool };
+function getConnection() {
+  return new Client({
+    host: isProd ? process.env.DB_HOST : "localhost",
+    user: isProd ? process.env.DB_USER : "postgres",
+    password: isProd ? process.env.DB_PASSWORD : "123",
+    database: isProd ? process.env.DB_NAME : "officecore",
+    port: isProd ? process.env.DB_PORT : 5432,
+    ssl: isProd ? { rejectUnauthorized: false } : false
+  });
+}
+
+module.exports = { pool, getConnection };
