@@ -3,110 +3,177 @@
 <head>
   <meta charset="UTF-8">
   <title>Admin Dashboard</title>
+
+  <!-- OPTIONAL: move to public/css/admin-dashboard.css -->
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f4f6f8;
-      margin: 30px;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 20px;
     }
 
     h2 {
+      margin-bottom: 20px;
       color: #333;
     }
 
     a {
       text-decoration: none;
-      color: #007bff;
-      margin-right: 15px;
+      color: inherit;
     }
 
-    a:hover {
-      text-decoration: underline;
-    }
-
-    .cards-container {
-      display: flex;
+    .cards {
+      display: grid;
+      grid-template-columns: repeat(5, 1fr);
       gap: 20px;
-      flex-wrap: wrap;
-      margin-top: 20px;
+      margin-bottom: 40px;
     }
 
     .card {
-      background-color: #fff;
+      background: #ffffff;
       padding: 20px;
       border-radius: 8px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-      width: 200px;
       text-align: center;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      transition: transform 0.2s ease, box-shadow 0.2s ease;
+    }
+
+    .card:hover {
+      transform: translateY(-4px);
+      box-shadow: 0 6px 14px rgba(0,0,0,0.15);
     }
 
     .card h3 {
-      margin-top: 0;
+      margin-bottom: 10px;
+      font-size: 15px;
       color: #555;
     }
 
-    .card span {
-      display: inline-block;
-      padding: 6px 12px;
-      margin-top: 8px;
-      background-color: #007bff;
-      color: #fff;
-      border-radius: 6px;
+    .card p {
+      font-size: 26px;
+      font-weight: bold;
+      color: #111;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #ffffff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    th, td {
+      padding: 12px;
+      border-bottom: 1px solid #eee;
+      text-align: left;
+    }
+
+    th {
+      background: #fafafa;
       font-weight: bold;
     }
 
-    footer {
-      margin-top: 40px;
-      font-size: 0.9em;
-      color: #666;
+    .top-links {
+      margin-bottom: 20px;
+    }
+
+    .top-links a {
+      margin-right: 15px;
+      color: #007bff;
+      font-weight: bold;
+    }
+
+    .view-all {
+      margin-top: 15px;
+      text-align: right;
+    }
+
+    .view-all a {
+      color: #007bff;
+      font-weight: bold;
     }
   </style>
 </head>
 <body>
 
-  <a href="/logout">Logout</a>
+  <div class="top-links">
+    <a href="/logout">Logout</a>
+    <a href="/admin/users">Users</a>
+    <a href="/admin/leave">Manage Leaves</a>
+  </div>
 
-  <h2>Welcome <%= adminame %> to Admin Dashboard</h2>
+  <h2>Welcome, <%= adminame %></h2>
 
-  <div class="cards-container">
-    <!-- Employee stats -->
-    <div class="card">
+  <!-- ===== STATS CARDS ===== -->
+  <div class="cards">
+
+    <a href="/admin/users" class="card">
       <h3>Total Employees</h3>
-      <span><%= totaluser %></span>
-    </div>
+      <p><%= totaluser %></p>
+    </a>
 
-    <div class="card">
-      <h3>Total Leave Requests</h3>
-      <span><%= Leaveuser %></span>
-    </div>
+    <a href="/admin/leave?status=pending" class="card">
+      <h3>Pending Leaves</h3>
+      <p><%= Leaveuser %></p>
+    </a>
 
-    <div class="card">
+    <a href="/admin/leave?status=approved" class="card">
       <h3>Approved Leaves</h3>
-      <span><%= approveuser %></span>
-    </div>
+      <p><%= approveuser %></p>
+    </a>
 
-    <div class="card">
+    <a href="/admin/leave?status=rejected" class="card">
       <h3>Rejected Leaves</h3>
-      <span><%= rejectuser %></span>
-    </div>
+      <p><%= rejectuser %></p>
+    </a>
 
-    <!-- Audit Logs card -->
-    <div class="card">
-      
+    <a href="/admin/audit_logs" class="card">
       <h3>Audit Logs</h3>
-      <a href="/admin/audit_logs"><span>View Logs</span></a>
-    </div>
+      <p>View</p>
+    </a>
 
   </div>
 
-  <br>
+  <!-- ===== RECENT PENDING REQUESTS ===== -->
+  <h3>Recent Pending Leave Requests</h3>
 
-  <!-- Links to other admin pages -->
-  <a href="/admin/leave">Manage Leaves</a>
-  <a href="/admin/users">Users</a>
+  <% if (pendingRequest.length === 0) { %>
+    <p>No pending requests.</p>
+  <% } else { %>
+    <table>
+      <thead>
+        <tr>
+          <th>Employee</th>
+          <th>Start</th>
+          <th>End</th>
+          <th>Reason</th>
+          <th>Requested At</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% pendingRequest.forEach(req => { %>
+          <tr>
+            <td><%= req.employee_name %></td>
+            <td><%= new Date(req.start_date).toDateString() %></td>
+            <td><%= new Date(req.end_date).toDateString() %></td>
+            <td><%= req.reason %></td>
+            <td><%= new Date(req.created_at).toLocaleString() %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
 
-  <footer>
+    <div class="view-all">
+      <a href="/admin/leave?status=pending">View all pending →</a>
+    </div>
+  <% } %>
+
+  <footer style="margin-top:40px;color:#666;">
     © 2025 OfficeCore
   </footer>
+
 </body>
 </html>
