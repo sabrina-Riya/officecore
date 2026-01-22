@@ -724,4 +724,4 @@ app.post("/admin/users/edit/:id", ensureAuthenticated, permitRoles("admin"), asy
 
 
 //  START SERVER 
-app.listen(port, () => logger.info(`Server running on port ${port}`));
+app.listen(port, () => logger.info(`Server running on port ${port}`));  
