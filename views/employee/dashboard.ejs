@@ -3,7 +3,6 @@
 <head>
   <meta charset="UTF-8">
   <title>Employee Dashboard</title>
-<<<<<<< HEAD
 
   <style>
     body {
@@ -15,22 +14,11 @@
 
     h2 {
       margin-bottom: 20px;
-=======
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f6f8;
-      margin: 30px;
-    }
-
-    h2 {
->>>>>>> f3e9dc6cd01bcd64aea3f2908eb5b1e7146c6de3
       color: #333;
     }
 
     a {
       text-decoration: none;
-<<<<<<< HEAD
       color: inherit;
     }
 
@@ -75,6 +63,7 @@
       font-size: 26px;
       font-weight: bold;
       color: #111;
+      margin: 0;
     }
 
     .success {
@@ -90,124 +79,96 @@
     footer {
       margin-top: 40px;
       color: #666;
-    }
-=======
-      color: #007bff;
-      margin-right: 15px;
-    }
-
-    a:hover {
-      text-decoration: underline;
-    }
-
-    .cards {
-      display: flex;
-      gap: 20px;
-      margin-top: 25px;
-      flex-wrap: wrap;
-    }
-
-    .card {
-      background: #fff;
-      padding: 20px;
-      width: 200px;
       text-align: center;
-      border-radius: 8px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
     }
 
-    .card h3 {
-      margin: 0;
+    .latest-leave {
+      margin-top: 30px;
+      padding: 20px;
+      background: #fff;
+      border-radius: 8px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+    }
+
+    .latest-leave h3 {
+      margin-bottom: 10px;
+      color: #333;
+    }
+
+    .latest-leave p {
+      margin: 5px 0;
       color: #555;
     }
 
-    .card span {
+    .latest-leave a {
       display: inline-block;
       margin-top: 10px;
-      background: #007bff;
-      color: #fff;
-      padding: 6px 12px;
-      border-radius: 6px;
+      color: #007bff;
       font-weight: bold;
     }
-
-    .success { color: green; }
-    .error { color: red; }
->>>>>>> f3e9dc6cd01bcd64aea3f2908eb5b1e7146c6de3
   </style>
 </head>
 <body>
 
-<<<<<<< HEAD
+  <!-- Top navigation links -->
   <div class="top-links">
     <a href="/logout">Logout</a>
     <a href="/employee/leave-apply">Apply Leave</a>
     <a href="/employee/leave-list">My Leaves</a>
   </div>
 
+  <!-- Welcome message -->
   <h2>Welcome, <%= username %></h2>
-=======
-  <a href="/logout">Logout</a>
 
-  <!-- ✅ FIXED VARIABLE -->
-  <h2>Welcome <%= username %></h2>
->>>>>>> f3e9dc6cd01bcd64aea3f2908eb5b1e7146c6de3
-
+  <!-- Flash messages -->
   <% if (success_msg && success_msg.length > 0) { %>
     <p class="success"><%= success_msg %></p>
   <% } %>
-
   <% if (err_msg && err_msg.length > 0) { %>
     <p class="error"><%= err_msg %></p>
   <% } %>
 
-<<<<<<< HEAD
-  <!-- ===== STATS CARDS ===== -->
+  <!-- Stats cards -->
   <div class="cards">
-
+  <a href="/employee/leave-list" style="text-decoration: none;">
     <div class="card">
       <h3>Total Leaves</h3>
       <p><%= totalleave %></p>
     </div>
+  </a>
 
+  <a href="/employee/leave-list?status=approved" style="text-decoration: none;">
     <div class="card">
       <h3>Approved Leaves</h3>
       <p><%= approvedLeave %></p>
     </div>
+  </a>
 
+  <a href="/employee/leave-list?status=rejected" style="text-decoration: none;">
     <div class="card">
       <h3>Rejected Leaves</h3>
       <p><%= rejectedLeave %></p>
     </div>
+  </a>
+</div>
 
-  </div>
+  <!-- Latest Leave Details -->
+  <% if (leave) { %>
+    <div class="latest-leave">
+      <h3>Latest Leave Details</h3>
+      <p><strong>Start Date:</strong> <%= leave.start_date.toDateString() %></p>
+      <p><strong>End Date:</strong> <%= leave.end_date.toDateString() %></p>
+      <p><strong>Reason:</strong> <%= leave.reason %></p>
+      <p><strong>Status:</strong> <%= leave.status %></p>
+      <% if (leave.status === 'rejected' && leave.rejection_reason) { %>
+        <p><strong>Rejection Reason:</strong> <%= leave.rejection_reason %></p>
+      <% } %>
+      <a href="/employee/leave/history/<%= leave.id %>">View Full History</a>
+    </div>
+  <% } %>
 
+  <!-- Footer -->
   <footer>
-=======
-  <div class="cards">
-    <div class="card">
-      <h3>Total Leaves</h3>
-      <span><%= totalleave %></span>
-    </div>
-
-    <div class="card">
-      <h3>Approved</h3>
-      <span><%= approvedLeave %></span>
-    </div>
-
-    <div class="card">
-      <h3>Rejected</h3>
-      <span><%= rejectedLeave %></span>
-    </div>
-  </div>
-
-  <br><br>
-
-  <a href="/employee/leave-apply">Apply for Leave</a>
-  <a href="/employee/leave-list">My Leave Requests</a>
-
-  <footer style="margin-top:40px;color:#666;">
->>>>>>> f3e9dc6cd01bcd64aea3f2908eb5b1e7146c6de3
     © 2025 OfficeCore
   </footer>
 

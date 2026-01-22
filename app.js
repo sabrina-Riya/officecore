@@ -7,28 +7,45 @@ const session = require("express-session");
 const flash = require("express-flash");
 const passport = require("passport");
 const initPass = require("./passport/passportconfig");
+const pgSession = require("connect-pg-simple")(session); // ✅ added for PostgreSQL session store
 const { redirectAuthenticated, ensureAuthenticated, permitRoles } = require("./middleware/auth");
 const logAudit = require("./auditlogger");
 const logger = require("./logger"); // Winston logger
 
-const port = process.env.PORT || 4000;
+const PORT = process.env.PORT || 10000;
+
+// View engine
 app.set("view engine", "ejs");
+
+// Body parser
 app.use(express.urlencoded({ extended: false }));
+
+// ✅ Session setup using PostgreSQL instead of MemoryStore
 app.use(
   session({
+    store: new pgSession({
+      pool: pool,           // your PostgreSQL pool
+      tableName: "session", // optional, defaults to 'session'
+    }),
     secret: process.env.SESSION_SECRET || "devsecret",
     resave: false,
     saveUninitialized: false,
+    cookie: {
+      maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
+      secure: process.env.NODE_ENV === "production", // HTTPS only in prod
+    },
   })
 );
+
+// Passport middleware
 app.use(passport.initialize());
 app.use(passport.session());
 initPass(passport);
+
+// Flash messages
 app.use(flash());
 
-// ====== ROUTES ======
 
-// --------- HOME ---------
 app.get("/", (req, res) => res.render("index"));
 
 // --------- AUTH ---------
@@ -88,20 +105,35 @@ app.get("/logout", (req, res, next) => {
 });
 
 // --------- EMPLOYEE DASHBOARD ---------
+// --------- EMPLOYEE DASHBOARD ---------
 app.get("/employee/dashboard", ensureAuthenticated, permitRoles("employee"), async (req, res) => {
   try {
-    const totalLeaves = await pool.query("SELECT COUNT(*) FROM leave_req WHERE user_id=$1", [req.user.id]);
-    const approvedLeaves = await pool.query("SELECT COUNT(*) FROM leave_req WHERE user_id=$1 AND status='approved'", [req.user.id]);
-    const rejectedLeaves = await pool.query("SELECT COUNT(*) FROM leave_req WHERE user_id=$1 AND status='rejected'", [req.user.id]);
+    // Get counts of leaves
+    const totalLeavesResult = await pool.query(
+      "SELECT COUNT(*) AS count FROM leave_req WHERE user_id=$1",
+      [req.user.id]
+    );
+    const approvedLeavesResult = await pool.query(
+      "SELECT COUNT(*) AS count FROM leave_req WHERE user_id=$1 AND status='approved'",
+      [req.user.id]
+    );
+    const rejectedLeavesResult = await pool.query(
+      "SELECT COUNT(*) AS count FROM leave_req WHERE user_id=$1 AND status='rejected'",
+      [req.user.id]
+    );
 
-    // Latest leave
+    const totalleave = parseInt(totalLeavesResult.rows[0].count) || 0;
+    const approvedLeave = parseInt(approvedLeavesResult.rows[0].count) || 0;
+    const rejectedLeave = parseInt(rejectedLeavesResult.rows[0].count) || 0;
+
+    // Get latest leave for the user
     const latestLeaveResult = await pool.query(
       "SELECT * FROM leave_req WHERE user_id=$1 ORDER BY created_at DESC LIMIT 1",
       [req.user.id]
     );
     const latestLeave = latestLeaveResult.rows[0] || null;
 
-    // Fetch audit logs for the latest leave if it exists
+    // Get audit logs for latest leave if exists
     let leaveLogs = [];
     if (latestLeave) {
       const logsResult = await pool.query(
@@ -115,22 +147,25 @@ app.get("/employee/dashboard", ensureAuthenticated, permitRoles("employee"), asy
       leaveLogs = logsResult.rows;
     }
 
+    // Render dashboard
     res.render("employee/dashboard", {
       username: req.user.name,
-      totalleave: totalLeaves.rows[0].count,
-      approvedLeave: approvedLeaves.rows[0].count,
-      rejectedLeave: rejectedLeaves.rows[0].count,
+      totalleave,
+      approvedLeave,
+      rejectedLeave,
       success_msg: req.flash("success_msg"),
       err_msg: req.flash("err_msg"),
       leave: latestLeave,
-      logs: leaveLogs  // ✅ pass logs so EJS can render
+      logs: leaveLogs
     });
+
   } catch (err) {
     logger.error(err.stack || err);
     req.flash("err_msg", "Unable to load dashboard");
     res.redirect("/");
   }
 });
+
 
 //  EMPLOYEE LEAVE ROUTES 
 const { Parser } = require('json2csv');
@@ -723,5 +758,6 @@ app.post("/admin/users/edit/:id", ensureAuthenticated, permitRoles("admin"), asy
 });
 
 
-//  START SERVER 
-app.listen(port, () => logger.info(`Server running on port ${port}`));  
+app.listen(PORT, () => {
+  console.log(`[INFO]: Server running on port ${PORT}`);
+});

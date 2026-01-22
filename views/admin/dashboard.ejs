@@ -3,9 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <title>Admin Dashboard</title>
-<<<<<<< HEAD
 
-  <!-- OPTIONAL: move to public/css/admin-dashboard.css -->
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -16,23 +14,22 @@
 
     h2 {
       margin-bottom: 20px;
-=======
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      background-color: #f4f6f8;
-      margin: 30px;
-    }
-
-    h2 {
->>>>>>> f3e9dc6cd01bcd64aea3f2908eb5b1e7146c6de3
       color: #333;
     }
 
     a {
       text-decoration: none;
-<<<<<<< HEAD
       color: inherit;
+    }
+
+    .top-links {
+      margin-bottom: 20px;
+    }
+
+    .top-links a {
+      margin-right: 15px;
+      color: #007bff;
+      font-weight: bold;
     }
 
     .cards {
@@ -66,6 +63,7 @@
       font-size: 26px;
       font-weight: bold;
       color: #111;
+      margin: 0;
     }
 
     table {
@@ -88,16 +86,6 @@
       font-weight: bold;
     }
 
-    .top-links {
-      margin-bottom: 20px;
-    }
-
-    .top-links a {
-      margin-right: 15px;
-      color: #007bff;
-      font-weight: bold;
-    }
-
     .view-all {
       margin-top: 15px;
       text-align: right;
@@ -106,66 +94,23 @@
     .view-all a {
       color: #007bff;
       font-weight: bold;
-=======
-      color: #007bff;
-      margin-right: 15px;
-    }
-
-    a:hover {
-      text-decoration: underline;
-    }
-
-    .cards-container {
-      display: flex;
-      gap: 20px;
-      flex-wrap: wrap;
-      margin-top: 20px;
-    }
-
-    .card {
-      background-color: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-      width: 200px;
-      text-align: center;
-    }
-
-    .card h3 {
-      margin-top: 0;
-      color: #555;
-    }
-
-    .card span {
-      display: inline-block;
-      padding: 6px 12px;
-      margin-top: 8px;
-      background-color: #007bff;
-      color: #fff;
-      border-radius: 6px;
-      font-weight: bold;
-    }
-
-    footer {
-      margin-top: 40px;
-      font-size: 0.9em;
-      color: #666;
->>>>>>> f3e9dc6cd01bcd64aea3f2908eb5b1e7146c6de3
     }
   </style>
 </head>
 <body>
 
-<<<<<<< HEAD
+  <!-- Top navigation -->
   <div class="top-links">
     <a href="/logout">Logout</a>
     <a href="/admin/users">Users</a>
     <a href="/admin/leave">Manage Leaves</a>
+    <a href="/admin/audit_logs">Audit Logs</a>
   </div>
 
+  <!-- Welcome -->
   <h2>Welcome, <%= adminame %></h2>
 
-  <!-- ===== STATS CARDS ===== -->
+  <!-- ===== STAT CARDS ===== -->
   <div class="cards">
 
     <a href="/admin/users" class="card">
@@ -174,7 +119,7 @@
     </a>
 
     <a href="/admin/leave?status=pending" class="card">
-      <h3>Pending Leaves</h3>
+      <h3>Pending Leave Requests</h3>
       <p><%= Leaveuser %></p>
     </a>
 
@@ -195,18 +140,19 @@
 
   </div>
 
-  <!-- ===== RECENT PENDING REQUESTS ===== -->
+  <!-- ===== RECENT REQUESTS ===== -->
   <h3>Recent Pending Leave Requests</h3>
 
   <% if (pendingRequest.length === 0) { %>
-    <p>No pending requests.</p>
+    <p>No pending leave requests.</p>
   <% } else { %>
+
     <table>
       <thead>
         <tr>
           <th>Employee</th>
-          <th>Start</th>
-          <th>End</th>
+          <th>Start Date</th>
+          <th>End Date</th>
           <th>Reason</th>
           <th>Requested At</th>
         </tr>
@@ -225,48 +171,14 @@
     </table>
 
     <div class="view-all">
-      <a href="/admin/leave?status=pending">View all pending →</a>
+      <a href="/admin/leave?status=pending">View all pending requests →</a>
     </div>
+
   <% } %>
 
   <footer style="margin-top:40px;color:#666;">
     © 2025 OfficeCore
   </footer>
 
-=======
-  <a href="/logout">Logout</a>
-
-  <h2>Welcome <%= adminame %> to Admin Dashboard</h2>
-
-  <div class="cards-container">
-    <div class="card">
-      <h3>Total Employees</h3>
-      <span><%= totaluser %></span>
-    </div>
-
-    <div class="card">
-      <h3>Total Leave Requests</h3>
-      <span><%= Leaveuser %></span>
-    </div>
-
-    <div class="card">
-      <h3>Approved Leaves</h3>
-      <span><%= approveuser %></span>
-    </div>
-
-    <div class="card">
-      <h3>Rejected Leaves</h3>
-      <span><%= rejectuser %></span>
-    </div>
-  </div>
-
-  <br>
-  <a href="/admin/leave">Manage Leaves</a>
-  <a href="/admin/users">Users</a>
-
-  <footer>
-    © 2025 OfficeCore
-  </footer>
->>>>>>> f3e9dc6cd01bcd64aea3f2908eb5b1e7146c6de3
 </body>
 </html>
