@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Apply for leave</title>
+  <style>
+    body{
+      font-family: Arial,sans-serif;
+      background-color:#f4f6f8;
+      padding:40px;
+    }
+    h2{
+      color:#333;
+    }
+    table{
+      width:500px;
+      background-color: #ffffff; 
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      border-collapse:collapse;
+    }
+    td{
+      padding:12px;
+    }
+    label{
+      font-weight: bold;
+    }
+    button{
+      background-color:#007bff;
+      color:white;
+      padding:8px 14px;
+      border:none;
+      cursor:pointer;
+    }
+    button:hover{
+      background-color: #0056b3;
+    }
+    .success{
+      color:green;
+      margin-bottom: 10px;
+    }
+    .error{
+      color:red;
+      margin-bottom: 10px;
+    }
+    tr:nth-child(even){
+      background-color: #f2f2f2;
+    }
+    input, textarea{
+      width:100%;
+      padding:6px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>Apply for leave</h2>
+
+<% if (success_msg && success_msg.length > 0) { %>
+  <div class="success"><%= success_msg %></div>
+<% } %>
+
+<% if (err_msg && err_msg.length > 0) { %>
+  <div class="error"><%= err_msg %></div>
+<% } %>
+
+<form action="/employee/leave-apply" method="post">
+  <table>
+    <tr>
+      <td><label>Start Date</label></td>
+      <td><input type="date" name="sdate" required></td>
+    </tr>
+
+    <tr>
+      <td><label>End Date</label></td>
+      <td><input type="date" name="edate" required></td>
+    </tr>
+
+    <tr>
+      <td><label>Reason</label></td>
+      <td><textarea name="reason" rows="4" required></textarea></td>
+    </tr>
+
+    <tr>
+      <td colspan="2" style="text-align:center">
+        <button type="submit">Submit</button>
+      </td>
+    </tr>
+  </table>
+
+  <br><br>
+  <a href="/employee/dashboard">← Back to dashboard</a>
+</form>
+
+<footer>
+    <p>© 2025 OfficeCore</p>
+</footer>
+
+</body>
+</html>

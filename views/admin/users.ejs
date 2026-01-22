@@ -1,0 +1,90 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin User Management</title>
+
+  <style>
+    body { font-family: Arial, sans-serif; background: #f4f6f8; margin: 30px; }
+    h2 { color: #333; }
+    .success { color: green; margin-bottom: 10px; }
+    .error { color: red; margin-bottom: 10px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      margin-top: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    th, td { padding: 12px; border-bottom: 1px solid #ddd; text-align: center; }
+    th { background: #007bff; color: #fff; }
+
+    tr.inactive { background: #f8d7da; opacity: 0.85; }
+
+    button { padding: 6px 10px; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; }
+    .deactivate { background: #dc3545; color: #fff; }
+    .activate { background: #28a745; color: #fff; }
+    .role-btn { background: #6f42c1; color: #fff; }
+    .edit-btn { background: #ffc107; color: #000; padding: 6px 10px; border-radius: 4px; text-decoration: none; font-size: 13px; }
+
+    a { margin-right: 15px; color: #007bff; text-decoration: none; }
+  </style>
+</head>
+<body>
+
+<h2>All Users</h2>
+
+<% if (success_msg && success_msg.length > 0) { %>
+  <div class="success"><%= success_msg %></div>
+<% } %>
+
+<% if (err_msg && err_msg.length > 0) { %>
+  <div class="error"><%= err_msg %></div>
+<% } %>
+
+<table>
+  <thead>
+    <tr>
+      <th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% if (users && users.length > 0) { %>
+      <% users.forEach(user => { %>
+        <tr class="<%= user.is_active ? '' : 'inactive' %>">
+          <td><%= user.id %></td>
+          <td><%= user.name %></td>
+          <td><%= user.email %></td>
+          <td><%= user.role %></td>
+          <td><%= user.is_active ? 'Active' : 'Inactive' %></td>
+          <td>
+            <form action="/admin/users/<%= user.id %>" method="POST" style="display:inline;">
+              <button class="<%= user.is_active ? 'deactivate' : 'activate' %>" type="submit">
+                <%= user.is_active ? 'Deactivate' : 'Activate' %>
+              </button>
+            </form>
+
+            <form action="/admin/users/role/<%= user.id %>" method="POST" style="display:inline; margin-left:5px;">
+              <button class="role-btn" type="submit">
+                <%= user.role === "admin" ? "Make Employee" : "Make Admin" %>
+              </button>
+            </form>
+
+            <a href="/admin/users/edit/<%= user.id %>" class="edit-btn">Edit</a>
+          </td>
+        </tr>
+      <% }) %>
+    <% } else { %>
+      <tr><td colspan="6">No users found</td></tr>
+    <% } %>
+  </tbody>
+</table>
+
+<br>
+<a href="/admin/dashboard">⬅ Back to Dashboard</a>
+<a href="/logout">Logout</a>
+
+</body>
+</html>

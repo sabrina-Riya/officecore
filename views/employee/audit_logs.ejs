@@ -1,0 +1,67 @@
+<!-- views/employee/audit_logs.ejs -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Your Audit Logs</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 30px; background-color: #f9f9f9; }
+    h2 { color: #333; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 10px; border: 1px solid #ccc; text-align: left; }
+    th { background-color: #eee; }
+    .pagination { margin-top: 20px; }
+    .pagination a { margin: 0 5px; text-decoration: none; color: #007bff; }
+    .pagination span { margin: 0 5px; }
+    .success { color: green; }
+    .error { color: red; }
+  </style>
+</head>
+<body>
+  <h2>Your Audit Logs</h2>
+
+  <% if (logs.length === 0) { %>
+    <p>No audit logs found.</p>
+  <% } else { %>
+    <table>
+      <thead>
+        <tr>
+          <th>Action</th>
+          <th>Target Table</th>
+          <th>Target ID</th>
+          <th>Old Status</th>
+          <th>New Status</th>
+          <th>Message</th>
+          <th>Date</th>
+        </tr>
+      </thead>
+      <tbody>
+        <% logs.forEach(log => { %>
+          <tr>
+            <td><%= log.action %></td>
+            <td><%= log.target_table %></td>
+            <td><%= log.target_id %></td>
+            <td><%= log.old_status || '-' %></td>
+            <td><%= log.new_status || '-' %></td>
+            <td><%= log.message %></td>
+            <td><%= new Date(log.created_at).toLocaleString() %></td>
+          </tr>
+        <% }) %>
+      </tbody>
+    </table>
+
+    <!-- Pagination -->
+    <div class="pagination">
+      <% if (currentPage > 1) { %>
+        <a href="?page=<%= currentPage - 1 %>&action=<%= filterAction %>">&laquo; Prev</a>
+      <% } %>
+
+      <span>Page <%= currentPage %> of <%= totalPages %></span>
+
+      <% if (currentPage < totalPages) { %>
+        <a href="?page=<%= currentPage + 1 %>&action=<%= filterAction %>">Next &raquo;</a>
+      <% } %>
+    </div>
+  <% } %>
+</body>
+</html>

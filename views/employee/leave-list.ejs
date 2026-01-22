@@ -1,0 +1,61 @@
+<h2>Your Leave History</h2>
+
+<!-- Filter Form -->
+<form method="get" action="/employee/leave-list">
+  <select name="status">
+    <option value="all" <%= filter?.status === "all" ? "selected" : "" %>>All</option>
+    <option value="pending" <%= filter?.status === "pending" ? "selected" : "" %>>Pending</option>
+    <option value="approved" <%= filter?.status === "approved" ? "selected" : "" %>>Approved</option>
+    <option value="rejected" <%= filter?.status === "rejected" ? "selected" : "" %>>Rejected</option>
+  </select>
+
+  <br><br>Start: <input type="date" name="startDate" value="<%= filter?.startDate || "" %>">
+  <br><br>End: <input type="date" name="endDate" value="<%= filter?.endDate || "" %>">
+
+  <button type="submit">Filter</button>
+  <br><br><a href="?<%= `status=${filter?.status || 'all'}&startDate=${filter?.startDate||''}&endDate=${filter?.endDate||''}&exportCsv=1` %>">Download CSV</a>
+</form>
+
+<!-- Leave Table -->
+<table>
+  <thead>
+    <tr>
+      <th>Start</th>
+      <th>End</th>
+      <th>Reason</th>
+      <th>Status</th>
+      <th>Actioned By</th>
+      <th>Actions</th>
+    </tr>
+  </thead>
+  <tbody>
+    <% leaves.forEach(leave => { %>
+      <tr>
+        <td><%= leave.start_date?.toLocaleDateString() || '-' %></td>
+        <td><%= leave.end_date?.toLocaleDateString() || '-' %></td>
+        <td><%= leave.reason %></td>
+        <td><%= leave.status %></td>
+        <td><%= leave.actioned_by_name || '-' %></td>
+        <td>
+          <% if (leave.status === 'pending') { %>
+            <a href="/employee/leave/edit/<%= leave.id %>">Edit</a> |
+            <a href="/employee/leave/cancel/<%= leave.id %>">Cancel</a>
+          <% } else { %>
+            -
+          <% } %>
+        </td>
+      </tr>
+    <% }) %>
+  </tbody>
+</table>
+
+<!-- Pagination -->
+<div class="pagination">
+  <% if (currentPage > 1) { %>
+    <a href="?page=<%= currentPage - 1 %>&status=<%= filter?.status || 'all' %>&startDate=<%= filter?.startDate || '' %>&endDate=<%= filter?.endDate || '' %>">&laquo; Prev</a>
+  <% } %>
+  Page <%= currentPage %> of <%= totalPages %>
+  <% if (currentPage < totalPages) { %>
+    <a href="?page=<%= currentPage + 1 %>&status=<%= filter?.status || 'all' %>&startDate=<%= filter?.startDate || '' %>&endDate=<%= filter?.endDate || '' %>">Next &raquo;</a>
+  <% } %>
+</div>
