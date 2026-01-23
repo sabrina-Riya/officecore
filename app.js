@@ -1,49 +1,70 @@
+// 1️⃣ Load environment variables
 require("dotenv").config();
+
+// 2️⃣ Core modules & setup
 const express = require("express");
 const app = express();
 const { pool } = require("./dbconfig");
 const bcrypt = require("bcrypt");
+
+// 3️⃣ Session & auth
 const session = require("express-session");
-const flash = require("express-flash");
+const pgSession = require("connect-pg-simple")(session); // PostgreSQL session store
 const passport = require("passport");
 const initPass = require("./passport/passportconfig");
-const pgSession = require("connect-pg-simple")(session); // ✅ added for PostgreSQL session store
+
+// 4️⃣ Utilities & middleware
+const flash = require("express-flash");
 const { redirectAuthenticated, ensureAuthenticated, permitRoles } = require("./middleware/auth");
 const logAudit = require("./auditlogger");
 const logger = require("./logger"); // Winston logger
 
+// 5️⃣ Port
 const PORT = process.env.PORT || 10000;
 
-// View engine
+// 6️⃣ View engine
 app.set("view engine", "ejs");
 
-// Body parser
+// 7️⃣ Body parser
 app.use(express.urlencoded({ extended: false }));
 
-// ✅ Session setup using PostgreSQL instead of MemoryStore
+// 8️⃣ Trust proxy (REQUIRED for secure cookies on Render)
+app.set("trust proxy", 1);
+
+// 9️⃣ Session middleware
 app.use(
   session({
     store: new pgSession({
-      pool: pool,           // your PostgreSQL pool
-      tableName: "session", // optional, defaults to 'session'
+      pool: pool,
+      tableName: "session",
     }),
     secret: process.env.SESSION_SECRET || "devsecret",
     resave: false,
     saveUninitialized: false,
     cookie: {
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      secure: process.env.NODE_ENV === "production", // HTTPS only in prod
+      secure: true, // MUST be true on Render
+      httpOnly: true,
+      sameSite: "lax"
     },
   })
 );
 
-// Passport middleware
+// 🔹 Optional debug middleware (remove in production)
+app.use((req, res, next) => {
+  console.log("Session object:", req.session);
+  console.log("Logged-in user:", req.user);
+  next();
+});
+
+// 10️⃣ Passport initialization
 app.use(passport.initialize());
 app.use(passport.session());
 initPass(passport);
 
-// Flash messages
+// 11️⃣ Flash messages
 app.use(flash());
+
 
 
 app.get("/", (req, res) => res.render("index"));
@@ -79,7 +100,11 @@ app.post("/register", async (req, res) => {
     res.send(err.message);
   }
 });
-
+app.use((req, res, next) => {
+  console.log("Session:", req.session);
+  console.log("User:", req.user);
+  next();
+});
 app.get("/login", redirectAuthenticated, (req, res) => res.render("login"));
 
 app.post(
@@ -95,6 +120,7 @@ app.get("/redirect_after_login", ensureAuthenticated, (req, res) => {
   if (req.user.role === "admin") return res.redirect("/admin/dashboard");
   return res.redirect("/employee/dashboard");
 });
+
 
 app.get("/logout", (req, res, next) => {
   req.logout((err) => {
