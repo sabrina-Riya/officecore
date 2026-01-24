@@ -1,19 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Your Leave History</title>
+<style>
+  body { font-family: Arial, sans-serif; background: #f4f6f8; margin: 30px; }
+  h2 { color: #333; }
+
+  table { width:100%; border-collapse: collapse; background:#fff; margin-top:20px; box-shadow:0 2px 8px rgba(0,0,0,0.1);}
+  th, td { padding:8px; border:1px solid #ccc; text-align:center; }
+  th { background:#007bff; color:#fff; }
+
+  button { padding:4px 8px; margin:2px; cursor:pointer; border:none; border-radius:4px; }
+  .success { color: green; margin-bottom:10px; }
+  .error { color: red; margin-bottom:10px; }
+
+  .pagination a { margin:0 5px; text-decoration:none; color:#007bff; }
+</style>
+</head>
+<body>
+
 <h2>Your Leave History</h2>
+
+<!-- Flash Messages -->
+<% if (success_msg && success_msg.length) { %>
+  <div class="success"><%= success_msg %></div>
+<% } %>
+<% if (err_msg && err_msg.length) { %>
+  <div class="error"><%= err_msg %></div>
+<% } %>
 
 <!-- Filter Form -->
 <form method="get" action="/employee/leave-list">
-  <select name="status">
-    <option value="all" <%= filter?.status === "all" ? "selected" : "" %>>All</option>
-    <option value="pending" <%= filter?.status === "pending" ? "selected" : "" %>>Pending</option>
-    <option value="approved" <%= filter?.status === "approved" ? "selected" : "" %>>Approved</option>
-    <option value="rejected" <%= filter?.status === "rejected" ? "selected" : "" %>>Rejected</option>
-  </select>
+  <label>Status: 
+    <select name="status">
+      <option value="all" <%= filter?.status === "all" ? "selected" : "" %>>All</option>
+      <option value="pending" <%= filter?.status === "pending" ? "selected" : "" %>>Pending</option>
+      <option value="approved" <%= filter?.status === "approved" ? "selected" : "" %>>Approved</option>
+      <option value="rejected" <%= filter?.status === "rejected" ? "selected" : "" %>>Rejected</option>
+    </select>
+  </label>
 
-  <br><br>Start: <input type="date" name="startDate" value="<%= filter?.startDate || "" %>">
-  <br><br>End: <input type="date" name="endDate" value="<%= filter?.endDate || "" %>">
-
+  <br><br>
+  <label>Start: <input type="date" name="startDate" value="<%= filter?.startDate || "" %>"></label>
+  <br><br>
+  <label>End: <input type="date" name="endDate" value="<%= filter?.endDate || "" %>"></label>
+  <br><br>
   <button type="submit">Filter</button>
-  <br><br><a href="?<%= `status=${filter?.status || 'all'}&startDate=${filter?.startDate||''}&endDate=${filter?.endDate||''}&exportCsv=1` %>">Download CSV</a>
+  <br><br>
+  <a href="?<%= `status=${filter?.status || 'all'}&startDate=${filter?.startDate||''}&endDate=${filter?.endDate||''}&exportCsv=1` %>">Download CSV</a>
 </form>
 
 <!-- Leave Table -->
@@ -29,23 +64,27 @@
     </tr>
   </thead>
   <tbody>
-    <% leaves.forEach(leave => { %>
-      <tr>
-        <td><%= leave.start_date?.toLocaleDateString() || '-' %></td>
-        <td><%= leave.end_date?.toLocaleDateString() || '-' %></td>
-        <td><%= leave.reason %></td>
-        <td><%= leave.status %></td>
-        <td><%= leave.actioned_by_name || '-' %></td>
-        <td>
-          <% if (leave.status === 'pending') { %>
-            <a href="/employee/leave/edit/<%= leave.id %>">Edit</a> |
-            <a href="/employee/leave/cancel/<%= leave.id %>">Cancel</a>
-          <% } else { %>
-            -
-          <% } %>
-        </td>
-      </tr>
-    <% }) %>
+    <% if (leaves && leaves.length > 0) { %>
+      <% leaves.forEach(leave => { %>
+        <tr>
+          <td><%= leave.start_date?.toLocaleDateString() || '-' %></td>
+          <td><%= leave.end_date?.toLocaleDateString() || '-' %></td>
+          <td><%= leave.reason %></td>
+          <td><%= leave.status %></td>
+          <td><%= leave.actioned_by_name || '-' %></td>
+          <td>
+            <% if (leave.status === 'pending') { %>
+              <a href="/employee/leave/edit/<%= leave.id %>">Edit</a> |
+              <a href="/employee/leave/cancel/<%= leave.id %>">Cancel</a>
+            <% } else { %>
+              -
+            <% } %>
+          </td>
+        </tr>
+      <% }) %>
+    <% } else { %>
+      <tr><td colspan="6">No leave requests found</td></tr>
+    <% } %>
   </tbody>
 </table>
 
@@ -59,3 +98,10 @@
     <a href="?page=<%= currentPage + 1 %>&status=<%= filter?.status || 'all' %>&startDate=<%= filter?.startDate || '' %>&endDate=<%= filter?.endDate || '' %>">Next &raquo;</a>
   <% } %>
 </div>
+
+<br>
+<a href="/employee/dashboard">⬅ Back to Dashboard</a>
+<a href="/logout">Logout</a>
+
+</body>
+</html>

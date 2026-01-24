@@ -42,7 +42,7 @@
       <th>Reason</th>
       <th>Status</th>
       <th>Rejection Reason</th>
-      <th>Actioned By</th> <!-- NEW COLUMN -->
+      <th>Actioned By</th>
       <th>Actions</th>
     </tr>
   </thead>
@@ -57,7 +57,7 @@
           <td><%= l.reason %></td>
           <td><%= l.status %></td>
           <td><%= l.rejection_reason || '-' %></td>
-          <td><%= l.actioned_by || '-' %></td> <!-- SHOW ADMIN -->
+          <td><%= l.actioned_by || '-' %></td>
           <td>
             <% if (l.status === "pending") { %>
               <!-- Approve Form -->
