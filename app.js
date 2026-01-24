@@ -16,11 +16,14 @@ const flash = require("express-flash");
 const { redirectAuthenticated, ensureAuthenticated, permitRoles } = require("./middleware/auth");
 const logAudit = require("./auditlogger");
 const logger = require("./logger"); // Winston logger
-const sendEmail = require("./nodemailer"); 
+const sendEmail = require("./nodemailer");
+
+ 
 
 
 // 5️⃣ Port
-const PORT = process.env.PORT || 10000;
+const PORT = process.env.PORT || 3000;
+
 
 // 6️⃣ View engine
 app.set("view engine", "ejs");
@@ -73,6 +76,20 @@ app.get("/", (req, res) => res.render("index"));
 app.get("/register", redirectAuthenticated, (req, res) =>
   res.render("register", { error: [] })
 );
+app.get("/test-email", async (req, res) => {
+  try {
+    await sendEmail({
+      to: "your-real-email@gmail.com",
+      subject: "Test Email",
+      html: "<p>This is a test from OfficeCore</p>"
+    });
+    res.send("Email sent!");
+  } catch (err) {
+    console.error(err);
+    res.send("Email failed: " + err.message);
+  }
+});
+
 
 app.post("/register", async (req, res) => {
   const { name, email, password, conpass } = req.body;
@@ -403,35 +420,34 @@ app.get("/employee/leave-apply", ensureAuthenticated, permitRoles("employee"), (
 
 app.post("/employee/leave-apply", ensureAuthenticated, permitRoles("employee"), async (req, res) => {
   const { sdate, edate, reason } = req.body;
+
   if (!sdate || !edate || !reason) {
     req.flash("err_msg", "All fields are required");
     return res.redirect("/employee/leave-apply");
   }
+
   if (new Date(sdate) > new Date(edate)) {
     req.flash("err_msg", "Start date cannot be after end date");
     return res.redirect("/employee/leave-apply");
   }
 
   try {
-    const count = await pool.query("SELECT COUNT(*) FROM leave_req WHERE user_id=$1", [req.user.id]);
-    if (parseInt(count.rows[0].count) >= 20) {
-      req.flash("err_msg", "Leave request limit (20) reached");
-      return res.redirect("/employee/leave-apply");
-    }
-
     await pool.query(
-      `INSERT INTO leave_req (user_id, start_date, end_date, reason) VALUES ($1,$2,$3,$4)`,
+      `INSERT INTO leave_req (user_id, start_date, end_date, reason, status)
+       VALUES ($1, $2, $3, $4, 'pending')`,
       [req.user.id, sdate, edate, reason]
     );
 
     req.flash("success_msg", "Leave request submitted");
     res.redirect("/employee/leave-list");
+
   } catch (err) {
     logger.error(err.stack || err);
     req.flash("err_msg", "Failed to apply for leave");
     res.redirect("/employee/leave-apply");
   }
 });
+
 
 app.get("/employee/leave/edit/:id", ensureAuthenticated, permitRoles("employee"), async (req, res) => {
   const leaveId = req.params.id;
@@ -543,13 +559,13 @@ app.post("/admin/leave/approve/:id", ensureAuthenticated, permitRoles("admin"), 
   const managerId = req.user.id;
 
   try {
-    // Get leave + employee info
-    const leaveResult = await pool.query(`
-      SELECT lr.status, u.email, u.name
-      FROM leave_req lr
-      JOIN users u ON lr.user_id = u.id
-      WHERE lr.id = $1
-    `, [leaveId]);
+    const leaveResult = await pool.query(
+      `SELECT lr.status, u.email, u.name
+       FROM leave_req lr
+       JOIN users u ON lr.user_id = u.id
+       WHERE lr.id = $1`,
+      [leaveId]
+    );
 
     const leave = leaveResult.rows[0];
 
@@ -558,31 +574,35 @@ app.post("/admin/leave/approve/:id", ensureAuthenticated, permitRoles("admin"), 
       return res.redirect("/admin/leave");
     }
 
-    const oldStatus = leave.status;
+    await pool.query(
+      `UPDATE leave_req
+       SET status='approved', approved_by=$1, actioned_at=NOW()
+       WHERE id=$2`,
+      [managerId, leaveId]
+    );
 
-    await pool.query(`
-      UPDATE leave_req
-      SET status='approved', approved_by=$1, actioned_at=NOW()
-      WHERE id=$2
-    `, [managerId, leaveId]);
-
-    // Audit log
     await logAudit({
       action: "LEAVE_APPROVED",
       performedBy: managerId,
       targetTable: "leave_req",
       targetId: leaveId,
-      oldStatus,
+      oldStatus: "pending",
       newStatus: "approved",
       message: "Leave approved"
     });
 
-    // Send email
-    await sendEmail({
-      to: leave.email,
-      subject: "Leave Approved",
-      html: `<p>Hi ${leave.name},</p><p>Your leave request has been <b>approved</b>.</p><p>Regards,<br>OfficeCore Admin</p>`
-    });
+    // 📧 Non-blocking email
+    try {
+      await sendEmail({
+        to: leave.email,
+        subject: "Leave Approved",
+        html: `<p>Hi ${leave.name},</p>
+               <p>Your leave request has been <b>approved</b>.</p>
+               <p>Regards,<br>OfficeCore</p>`
+      });
+    } catch (mailErr) {
+      logger.error("Email failed (approve)", mailErr);
+    }
 
     req.flash("success_msg", "Leave approved successfully");
     res.redirect("/admin/leave");
@@ -602,12 +622,13 @@ app.post("/admin/leave/reject/:id", ensureAuthenticated, permitRoles("admin"), a
   const { reason } = req.body;
 
   try {
-    const leaveResult = await pool.query(`
-      SELECT lr.status, u.email, u.name
-      FROM leave_req lr
-      JOIN users u ON lr.user_id = u.id
-      WHERE lr.id = $1
-    `, [leaveId]);
+    const leaveResult = await pool.query(
+      `SELECT lr.status, u.email, u.name
+       FROM leave_req lr
+       JOIN users u ON lr.user_id = u.id
+       WHERE lr.id = $1`,
+      [leaveId]
+    );
 
     const leave = leaveResult.rows[0];
 
@@ -616,29 +637,35 @@ app.post("/admin/leave/reject/:id", ensureAuthenticated, permitRoles("admin"), a
       return res.redirect("/admin/leave");
     }
 
-    const oldStatus = leave.status;
-
-    await pool.query(`
-      UPDATE leave_req
-      SET status='rejected', rejection_reason=$1, approved_by=$2, actioned_at=NOW()
-      WHERE id=$3
-    `, [reason, managerId, leaveId]);
+    await pool.query(
+      `UPDATE leave_req
+       SET status='rejected', rejection_reason=$1, approved_by=$2, actioned_at=NOW()
+       WHERE id=$3`,
+      [reason, managerId, leaveId]
+    );
 
     await logAudit({
       action: "LEAVE_REJECTED",
       performedBy: managerId,
       targetTable: "leave_req",
       targetId: leaveId,
-      oldStatus,
+      oldStatus: "pending",
       newStatus: "rejected",
       message: reason
     });
 
-    await sendEmail({
-      to: leave.email,
-      subject: "Leave Request Rejected",
-      html: `<p>Hello ${leave.name},</p><p>Your leave request has been <b>rejected</b>.</p><p><b>Reason:</b> ${reason}</p><p>Please contact HR if you have questions.</p>`
-    });
+    // 📧 Non-blocking email
+    try {
+      await sendEmail({
+        to: leave.email,
+        subject: "Leave Rejected",
+        html: `<p>Hello ${leave.name},</p>
+               <p>Your leave request has been <b>rejected</b>.</p>
+               <p><b>Reason:</b> ${reason}</p>`
+      });
+    } catch (mailErr) {
+      logger.error("Email failed (reject)", mailErr);
+    }
 
     req.flash("success_msg", "Leave rejected successfully");
     res.redirect("/admin/leave");
@@ -649,6 +676,7 @@ app.post("/admin/leave/reject/:id", ensureAuthenticated, permitRoles("admin"), a
     res.redirect("/admin/leave");
   }
 });
+
 //  ADMIN USER MANAGEMENT 
 app.get("/admin/users", ensureAuthenticated, permitRoles("admin"), async (req, res) => {
   try {
