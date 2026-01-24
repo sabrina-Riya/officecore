@@ -21,6 +21,7 @@
     "express-flash": "^0.0.2",
     "express-session": "^1.18.2",
     "json2csv": "^6.0.0-alpha.2",
+    "nodemailer": "^7.0.12",
     "passport": "^0.7.0",
     "passport-local": "^1.0.0",
     "pg": "^8.16.3",
