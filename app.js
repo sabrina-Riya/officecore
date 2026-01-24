@@ -551,15 +551,15 @@ app.post("/admin/leave/approve/:id", ensureAuthenticated, permitRoles("admin"), 
       WHERE lr.id = $1
     `, [leaveId]);
 
-    if (!leaveResult.rows[0] || leaveResult.rows[0].status !== "pending") {
+    const leave = leaveResult.rows[0];
+
+    if (!leave || leave.status !== "pending") {
       req.flash("err_msg", "Cannot approve this leave (not pending)");
       return res.redirect("/admin/leave");
     }
 
-    const leave = leaveResult.rows[0];
     const oldStatus = leave.status;
 
-    // Update leave status
     await pool.query(`
       UPDATE leave_req
       SET status='approved', approved_by=$1, actioned_at=NOW()
@@ -577,20 +577,12 @@ app.post("/admin/leave/approve/:id", ensureAuthenticated, permitRoles("admin"), 
       message: "Leave approved"
     });
 
-    // Send email notification
-    try {
-      await sendEmail({
-        to: leave.email,
-        subject: "Leave Approved",
-        html: `
-          <p>Hi ${leave.name},</p>
-          <p>Your leave request has been <b>approved</b>.</p>
-          <p>Regards,<br>OfficeCore Admin</p>
-        `
-      });
-    } catch (err) {
-      console.error("Approval email failed:", err);
-    }
+    // Send email
+    await sendEmail({
+      to: leave.email,
+      subject: "Leave Approved",
+      html: `<p>Hi ${leave.name},</p><p>Your leave request has been <b>approved</b>.</p><p>Regards,<br>OfficeCore Admin</p>`
+    });
 
     req.flash("success_msg", "Leave approved successfully");
     res.redirect("/admin/leave");
@@ -602,6 +594,7 @@ app.post("/admin/leave/approve/:id", ensureAuthenticated, permitRoles("admin"), 
   }
 });
 
+
 // Reject leave
 app.post("/admin/leave/reject/:id", ensureAuthenticated, permitRoles("admin"), async (req, res) => {
   const leaveId = req.params.id;
@@ -609,7 +602,6 @@ app.post("/admin/leave/reject/:id", ensureAuthenticated, permitRoles("admin"), a
   const { reason } = req.body;
 
   try {
-    // Get leave + employee info
     const leaveResult = await pool.query(`
       SELECT lr.status, u.email, u.name
       FROM leave_req lr
@@ -617,22 +609,21 @@ app.post("/admin/leave/reject/:id", ensureAuthenticated, permitRoles("admin"), a
       WHERE lr.id = $1
     `, [leaveId]);
 
-    if (!leaveResult.rows[0] || leaveResult.rows[0].status !== "pending") {
+    const leave = leaveResult.rows[0];
+
+    if (!leave || leave.status !== "pending") {
       req.flash("err_msg", "Cannot reject this leave (not pending)");
       return res.redirect("/admin/leave");
     }
 
-    const leave = leaveResult.rows[0];
     const oldStatus = leave.status;
 
-    // Update leave status
     await pool.query(`
       UPDATE leave_req
       SET status='rejected', rejection_reason=$1, approved_by=$2, actioned_at=NOW()
       WHERE id=$3
     `, [reason, managerId, leaveId]);
 
-    // Audit log
     await logAudit({
       action: "LEAVE_REJECTED",
       performedBy: managerId,
@@ -643,21 +634,11 @@ app.post("/admin/leave/reject/:id", ensureAuthenticated, permitRoles("admin"), a
       message: reason
     });
 
-    // Send email notification
-    try {
-      await sendEmail({
-        to: leave.email,
-        subject: "Leave Request Rejected",
-        html: `
-          <p>Hello ${leave.name},</p>
-          <p>Your leave request has been <b>rejected</b>.</p>
-          <p><b>Reason:</b> ${reason}</p>
-          <p>Please contact HR if you have questions.</p>
-        `
-      });
-    } catch (err) {
-      console.error("Rejection email failed:", err);
-    }
+    await sendEmail({
+      to: leave.email,
+      subject: "Leave Request Rejected",
+      html: `<p>Hello ${leave.name},</p><p>Your leave request has been <b>rejected</b>.</p><p><b>Reason:</b> ${reason}</p><p>Please contact HR if you have questions.</p>`
+    });
 
     req.flash("success_msg", "Leave rejected successfully");
     res.redirect("/admin/leave");
@@ -668,8 +649,6 @@ app.post("/admin/leave/reject/:id", ensureAuthenticated, permitRoles("admin"), a
     res.redirect("/admin/leave");
   }
 });
-
-
 //  ADMIN USER MANAGEMENT 
 app.get("/admin/users", ensureAuthenticated, permitRoles("admin"), async (req, res) => {
   try {
