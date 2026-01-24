@@ -16,7 +16,7 @@ const flash = require("express-flash");
 const { redirectAuthenticated, ensureAuthenticated, permitRoles } = require("./middleware/auth");
 const logAudit = require("./auditlogger");
 const logger = require("./logger"); // Winston logger
-const sendEmail = require("./nodemailer");
+const sendEmail = require("./sendemail");
 
  
 
@@ -76,21 +76,20 @@ app.get("/", (req, res) => res.render("index"));
 app.get("/register", redirectAuthenticated, (req, res) =>
   res.render("register", { error: [] })
 );
+// Test email route
 app.get("/test-email", async (req, res) => {
   try {
     await sendEmail({
-      to: "sabrinaleetcode@gmail.com", // YOUR inbox
-      subject: "OfficeCore Test",
-      html: "<p>If you see this, email works.</p>"
+      to: "sabrinaleetcode@gmail.com",
+      subject: "OfficeCore Test Email",
+      html: "<p>Hello, this is a test email from OfficeCore!</p>",
     });
-    res.send("Email sent");
+    res.send("Test email sent successfully ✅");
   } catch (err) {
-    console.error(err);
-    res.send("Email failed");
+    console.error("Failed to send email:", err);
+    res.status(500).send("Failed to send test email ❌");
   }
 });
-
-
 
 app.post("/register", async (req, res) => {
   const { name, email, password, conpass } = req.body;
@@ -601,11 +600,7 @@ app.post("/admin/leave/approve/:id", ensureAuthenticated, permitRoles("admin"), 
     await sendEmail({
       to: leave.email,   // user email
       subject: "Leave Approved",
-      html: `
-        <p>Hi ${leave.name},</p>
-        <p>Your leave request has been <b>approved</b>.</p>
-        <p>Regards,<br>OfficeCore Admin</p>
-      `
+      html: `<p>Hi ${leave.name},</p><p>Your leave request has been <b>approved</b>.</p>`
     });
 
     req.flash("success_msg", "Leave approved successfully");
@@ -663,13 +658,8 @@ app.post("/admin/leave/reject/:id", ensureAuthenticated, permitRoles("admin"), a
     // Send email using your variable
     await sendEmail({
       to: leave.email,
-      subject: "Leave Request Rejected",
-      html: `
-        <p>Hello ${leave.name},</p>
-        <p>Your leave request has been <b>rejected</b>.</p>
-        <p><b>Reason:</b> ${reason}</p>
-        <p>Contact HR for details.</p>
-      `
+      subject: "Leave Approved",
+      html: `<p>Hi ${leave.name},</p><p>Your leave request has been <b>approved</b>.</p>`
     });
 
     req.flash("success_msg", "Leave rejected successfully");
