@@ -554,13 +554,14 @@ app.get("/admin/leave", ensureAuthenticated, permitRoles("admin"), async (req, r
 });
 
 // Approve leave
+// ===== ADMIN LEAVE MANAGEMENT =====
+
 // Approve leave
 app.post("/admin/leave/approve/:id", ensureAuthenticated, permitRoles("admin"), async (req, res) => {
   const leaveId = req.params.id;
   const managerId = req.user.id;
 
   try {
-    // 1️⃣ Get leave + employee info
     const leaveResult = await pool.query(`
       SELECT lr.status, u.email, u.name
       FROM leave_req lr
@@ -569,7 +570,6 @@ app.post("/admin/leave/approve/:id", ensureAuthenticated, permitRoles("admin"), 
     `, [leaveId]);
 
     const leave = leaveResult.rows[0];
-
     if (!leave || leave.status !== "pending") {
       req.flash("err_msg", "Cannot approve this leave (not pending)");
       return res.redirect("/admin/leave");
@@ -577,14 +577,14 @@ app.post("/admin/leave/approve/:id", ensureAuthenticated, permitRoles("admin"), 
 
     const oldStatus = leave.status;
 
-    // 2️⃣ Update leave in DB
+    // Update DB first
     await pool.query(`
       UPDATE leave_req
       SET status='approved', approved_by=$1, actioned_at=NOW()
       WHERE id=$2
     `, [managerId, leaveId]);
 
-    // 3️⃣ Log audit
+    // Audit log
     await logAudit({
       action: "LEAVE_APPROVED",
       performedBy: managerId,
@@ -595,30 +595,23 @@ app.post("/admin/leave/approve/:id", ensureAuthenticated, permitRoles("admin"), 
       message: "Leave approved"
     });
 
-    // 4️⃣ Send email (catch email errors separately)
-    try {
-      await sendEmail({
-        to: leave.email,
-        subject: "Leave Approved",
-        html: `<p>Hi ${leave.name},</p><p>Your leave request has been <b>approved</b>.</p><p>Regards,<br>OfficeCore Admin</p>`
-      });
-      console.log(`EMAIL SENT ✅ to ${leave.email}`);
-    } catch (emailErr) {
-      console.error(`EMAIL FAILED ❌ to ${leave.email}`, emailErr);
-    }
+    // Send email asynchronously
+    sendEmail({
+      to: leave.email,
+      subject: "Leave Approved",
+      html: `<p>Hi ${leave.name},</p><p>Your leave request has been <b>approved</b>.</p><p>Regards,<br>OfficeCore Admin</p>`
+    }).catch(err => console.error("Email failed:", err));
 
     req.flash("success_msg", "Leave approved successfully");
     res.redirect("/admin/leave");
 
   } catch (err) {
-    console.error(err);
+    logger.error(err.stack || err);
     req.flash("err_msg", "Failed to approve leave");
     res.redirect("/admin/leave");
   }
 });
 
-
-// Reject leave
 // Reject leave
 app.post("/admin/leave/reject/:id", ensureAuthenticated, permitRoles("admin"), async (req, res) => {
   const leaveId = req.params.id;
@@ -626,7 +619,6 @@ app.post("/admin/leave/reject/:id", ensureAuthenticated, permitRoles("admin"), a
   const { reason } = req.body;
 
   try {
-    // 1️⃣ Get leave + employee info
     const leaveResult = await pool.query(`
       SELECT lr.status, u.email, u.name
       FROM leave_req lr
@@ -635,7 +627,6 @@ app.post("/admin/leave/reject/:id", ensureAuthenticated, permitRoles("admin"), a
     `, [leaveId]);
 
     const leave = leaveResult.rows[0];
-
     if (!leave || leave.status !== "pending") {
       req.flash("err_msg", "Cannot reject this leave (not pending)");
       return res.redirect("/admin/leave");
@@ -643,14 +634,14 @@ app.post("/admin/leave/reject/:id", ensureAuthenticated, permitRoles("admin"), a
 
     const oldStatus = leave.status;
 
-    // 2️⃣ Update leave in DB
+    // Update DB first
     await pool.query(`
       UPDATE leave_req
       SET status='rejected', rejection_reason=$1, approved_by=$2, actioned_at=NOW()
       WHERE id=$3
     `, [reason, managerId, leaveId]);
 
-    // 3️⃣ Log audit
+    // Audit log
     await logAudit({
       action: "LEAVE_REJECTED",
       performedBy: managerId,
@@ -661,23 +652,18 @@ app.post("/admin/leave/reject/:id", ensureAuthenticated, permitRoles("admin"), a
       message: reason
     });
 
-    // 4️⃣ Send email (catch email errors separately)
-    try {
-      await sendEmail({
-        to: leave.email,
-        subject: "Leave Request Rejected",
-        html: `<p>Hello ${leave.name},</p><p>Your leave request has been <b>rejected</b>.</p><p><b>Reason:</b> ${reason}</p><p>Please contact HR if you have questions.</p>`
-      });
-      console.log(`EMAIL SENT ✅ to ${leave.email}`);
-    } catch (emailErr) {
-      console.error(`EMAIL FAILED ❌ to ${leave.email}`, emailErr);
-    }
+    // Send email asynchronously
+    sendEmail({
+      to: leave.email,
+      subject: "Leave Request Rejected",
+      html: `<p>Hello ${leave.name},</p><p>Your leave request has been <b>rejected</b>.</p><p><b>Reason:</b> ${reason}</p><p>Contact HR for details.</p>`
+    }).catch(err => console.error("Email failed:", err));
 
     req.flash("success_msg", "Leave rejected successfully");
     res.redirect("/admin/leave");
 
   } catch (err) {
-    console.error(err);
+    logger.error(err.stack || err);
     req.flash("err_msg", "Failed to reject leave");
     res.redirect("/admin/leave");
   }
