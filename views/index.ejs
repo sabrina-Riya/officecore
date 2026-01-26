@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>OfficeCore Dashboard</title>
+  <title>OfficeCore – RBAC Enterprise Platform</title>
   <style>
     body {
       font-family: Arial, sans-serif;
@@ -11,19 +11,48 @@
       text-align: center;
     }
 
-    h2 {
+    h1, h2 {
       color: #333;
     }
 
-    a {
+    .demo-buttons {
+      margin: 20px 0;
+    }
+
+    .demo-buttons a {
+      display: inline-block;
+      margin: 10px;
+      padding: 10px 20px;
+      background-color: #28a745;
+      color: white;
+      border-radius: 6px;
       text-decoration: none;
-      color: #007bff;
-      margin: 0 10px;
       font-weight: bold;
     }
 
-    a:hover {
-      text-decoration: underline;
+    .demo-buttons a:hover {
+      background-color: #1e7e34;
+    }
+
+    a.normal-link {
+      display: inline-block;
+      margin: 10px;
+      padding: 10px 20px;
+      background-color: #007bff;
+      color: white;
+      border-radius: 6px;
+      text-decoration: none;
+      font-weight: bold;
+    }
+
+    a.normal-link:hover {
+      background-color: #0056b3;
+    }
+
+    .disclaimer {
+      font-size: 0.9em;
+      color: #555;
+      margin-top: 20px;
     }
 
     footer {
@@ -35,10 +64,22 @@
 </head>
 <body>
 
-  <h2>Welcome to OfficeCore Dashboard</h2>
-  <p>Here you can manage your tasks and view relevant information.</p>
+  <h1>🚀 Welcome to OfficeCore</h1>
+  <h2>Role-Based Enterprise Management System</h2>
 
-  <a href="/login">Login</a> | <a href="/register">Register</a>
+  <p>Try the demo instantly without registering:</p>
+
+  <div class="demo-buttons">
+    <a href="/demo/admin">👑 Login as Admin</a>
+    <a href="/demo/employee">👤 Login as Employee</a>
+  </div>
+
+  <a href="/login" class="normal-link">🔐 Normal Login</a>
+  <a href="/register" class="normal-link">📝 Register Account</a>
+
+  <div class="disclaimer">
+    ⚠️ Demo accounts are reset periodically. Some actions are disabled for safety.
+  </div>
 
   <footer>
     © 2025 OfficeCore

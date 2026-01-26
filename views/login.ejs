@@ -23,6 +23,7 @@
       width: 300px;
       box-shadow: 0 3px 10px rgba(0,0,0,0.1);
       border-radius: 8px;
+      margin-bottom: 20px;
     }
 
     input {
@@ -42,10 +43,27 @@
       cursor: pointer;
       border-radius: 4px;
       font-weight: bold;
+      margin-bottom: 10px;
     }
 
     button:hover {
       background-color: #0056b3;
+    }
+
+    .demo-buttons {
+      display: flex;
+      justify-content: space-between;
+      width: 300px;
+      margin-bottom: 20px;
+    }
+
+    .demo-buttons button {
+      width: 48%;
+      background-color: #28a745;
+    }
+
+    .demo-buttons button:hover {
+      background-color: #1e7e34;
     }
 
     .message {
@@ -69,6 +87,13 @@
       font-size: 0.9em;
       color: #666;
     }
+
+    .disclaimer {
+      font-size: 0.8em;
+      color: #555;
+      text-align: center;
+      margin-bottom: 20px;
+    }
   </style>
 </head>
 <body>
@@ -87,9 +112,24 @@
     <% }) %>
   <% } %>
 
+  <!-- Demo Login Buttons -->
+  <div class="demo-buttons">
+    <form action="/demo/admin" method="get">
+      <button type="submit">Login as Admin</button>
+    </form>
+    <form action="/demo/employee" method="get">
+      <button type="submit">Login as Employee</button>
+    </form>
+  </div>
+
+  <div class="disclaimer">
+    ⚠️ Demo accounts are reset periodically. Some actions are disabled for safety.
+  </div>
+
+  <!-- Normal Login Form -->
   <form action="/login" method="post">
-    <input type="email" name="email" placeholder="Enter your email" required>
-    <input type="password" name="password" placeholder="Enter your password" required>
+    <input type="email" name="email" placeholder="Enter your email" value="<%= demoEmail || '' %>" required>
+    <input type="password" name="password" placeholder="Enter your password" value="<%= demoPassword || '' %>" required>
     <button type="submit">Login</button>
   </form>
 

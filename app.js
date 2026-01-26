@@ -1,81 +1,114 @@
-
-require("dotenv").config();
-
 const express = require("express");
 const app = express();
-const { pool } = require("./dbconfig");
+const { pool } = require("./dbconfig"); // use dbconfig.js
 const bcrypt = require("bcrypt");
 
 const session = require("express-session");
-const pgSession = require("connect-pg-simple")(session); // PostgreSQL session store
+const pgSession = require("connect-pg-simple")(session);
 const passport = require("passport");
 const initPass = require("./passport/passportconfig");
 
-// 4️⃣ Utilities & middleware
+// Utilities & middleware
 const flash = require("express-flash");
 const { redirectAuthenticated, ensureAuthenticated, permitRoles } = require("./middleware/auth");
 const logAudit = require("./auditlogger");
 const logger = require("./logger"); // Winston logger
 const sendEmail = require("./sendemail");
 
- 
-
-
-// 5️⃣ Port
+// Port
 const PORT = process.env.PORT || 3000;
 
-
-// 6️⃣ View engine
+// View engine
 app.set("view engine", "ejs");
 
-// 7️⃣ Body parser
+// Body parser
 app.use(express.urlencoded({ extended: false }));
 
-// 8️⃣ Trust proxy (REQUIRED for secure cookies on Render)
+// Trust proxy (required for secure cookies on Render)
 app.set("trust proxy", 1);
 
-// 9️⃣ Session middleware
+// Session middleware (Render-ready)
 app.use(
   session({
     store: new pgSession({
       pool: pool,
       tableName: "session",
+      createTableIfMissing: true,
     }),
     secret: process.env.SESSION_SECRET || "devsecret",
     resave: false,
     saveUninitialized: false,
     cookie: {
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      secure: true, // MUST be true on Render
+      secure: process.env.NODE_ENV === "production", // true on Render
       httpOnly: true,
-      sameSite: "lax"
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
     },
   })
 );
 
-// 🔹 Optional debug middleware (remove in production)
-app.use((req, res, next) => {
-  console.log("Session object:", req.session);
-  console.log("Logged-in user:", req.user);
-  next();
-});
+// Optional debug middleware (local only)
+if (process.env.NODE_ENV !== "production") {
+  app.use((req, res, next) => {
+    console.log("Session object:", req.session);
+    console.log("Logged-in user:", req.user);
+    next();
+  });
+}
 
-// 10️⃣ Passport initialization
+// Passport initialization
 app.use(passport.initialize());
 app.use(passport.session());
 initPass(passport);
 
-// 11️⃣ Flash messages
+// Flash messages
 app.use(flash());
+// ---------------- Landing Page ----------------
+app.get("/", (req, res) => {
+  res.render("index"); // renders your index.ejs
+});
 
+// ---------------- Demo Login Route ----------------
+app.get("/demo/:role", (req, res) => {
+  const { role } = req.params;
+  let demoEmail = "";
+  let demoPassword = "";
 
+  if (role === "admin") {
+    demoEmail = "admin@officecore.demo";
+    demoPassword = "Admin@123";
+  } else if (role === "employee") {
+    demoEmail = "employee@officecore.demo";
+    demoPassword = "Employee@123";
+  } else {
+    // if someone types wrong role, redirect to login page
+    return res.redirect("/login");
+  }
 
-app.get("/", (req, res) => res.render("index"));
+  // render login.ejs with pre-filled demo credentials
+  res.render("login", { messages: req.flash(), demoEmail, demoPassword });
+});
 
-// --------- AUTH ---------
-app.get("/register", redirectAuthenticated, (req, res) =>
-  res.render("register", { error: [] })
-);
+// ---------------- Auth Routes ----------------
+app.get("/register", redirectAuthenticated, (req, res) => {
+  res.render("register", { error: [] });
+});
+
+app.get("/login", redirectAuthenticated, (req, res) => {
+  // Normal login page, no pre-filled demo credentials
+  res.render("login", { messages: req.flash(), demoEmail: "", demoPassword: "" });
+});
+
+app.post("/login", passport.authenticate("local", {
+  successRedirect: "/dashboard",
+  failureRedirect: "/login",
+  failureFlash: true
+}));
+
+app.post("/register", async (req, res) => {
+  // your existing registration logic here
+});
+
 // Test email route
 app.get("/test-email", async (req, res) => {
   try {
