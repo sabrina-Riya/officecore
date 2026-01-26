@@ -1,19 +1,20 @@
-const { Resend } = require("resend");
-const resend = new Resend({ apiKey: process.env.RESEND_API_KEY });
+// utils/webhooks.js
+const axios = require("axios");
 
-async function sendEmail({ to, subject, html }) {
+async function sendWebhook(event, data) {
+  const WEBHOOK_URL = process.env.WEBHOOK_URL;
+  if (!WEBHOOK_URL) return console.log("⚠️ No webhook URL configured");
+
   try {
-    const response = await resend.emails.send({
-      from: "sabrinaleetcode@gmail.com",
-      to,         
-      subject,    
-      html
+    await axios.post(WEBHOOK_URL, {
+      event,
+      timestamp: new Date().toISOString(),
+      data,
     });
-    console.log("Email sent successfully:", response);
+    console.log(`✅ Webhook sent: ${event}`);
   } catch (err) {
-    console.error("Failed to send email:", err);
-    throw err;
+    console.error("❌ Webhook failed:", err.message);
   }
 }
 
-module.exports = sendEmail;
+module.exports = sendWebhook;

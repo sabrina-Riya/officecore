@@ -1,69 +1,61 @@
+// Load environment variables
+require("dotenv").config();
+
 const express = require("express");
 const app = express();
-const { pool } = require("./dbconfig"); // use dbconfig.js
-const bcrypt = require("bcrypt");
+const PORT = process.env.PORT || 10000; // <-- Add PORT here
 
+const { Pool } = require("pg");
+const bcrypt = require("bcrypt");
 const session = require("express-session");
 const pgSession = require("connect-pg-simple")(session);
 const passport = require("passport");
-const initPass = require("./passport/passportconfig");
-
-// Utilities & middleware
 const flash = require("express-flash");
+
+// Custom modules
+const initPass = require("./passport/passportconfig");
 const { redirectAuthenticated, ensureAuthenticated, permitRoles } = require("./middleware/auth");
-const logAudit = require("./auditlogger");
-const logger = require("./logger"); // Winston logger
-const sendEmail = require("./sendemail");
+const logger = require("./logger");
 const sendWebhook = require("./webhooks");
+console.log("sendWebhook type:", typeof sendWebhook);
 
-// Port
-const PORT = process.env.PORT || 3000;
+// ---------- DB ----------
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL,
+  ssl: { rejectUnauthorized: false },
+});
 
-// View engine
+// ---------- Middleware ----------
 app.set("view engine", "ejs");
-
-// Body parser
 app.use(express.urlencoded({ extended: false }));
+app.set("trust proxy", 1); // Required for Render behind proxy
 
-// Trust proxy (required for secure cookies on Render)
-app.set("trust proxy", 1);
-
-// Session middleware (Render-ready)
 app.use(
   session({
-    store: new pgSession({
-      pool: pool,
-      tableName: "session",
-      createTableIfMissing: true,
-    }),
-    secret: process.env.SESSION_SECRET || "devsecret",
+    store: new pgSession({ pool, tableName: "session", createTableIfMissing: true }),
+    secret: process.env.SESSION_SECRET,
     resave: false,
     saveUninitialized: false,
+    // Render requires this for HTTPS and cookies
     cookie: {
       maxAge: 30 * 24 * 60 * 60 * 1000, // 30 days
-      secure: process.env.NODE_ENV === "production", // true on Render
+      secure: process.env.NODE_ENV === "production", // Only true in prod
       httpOnly: true,
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
+      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax", // Use 'none' for cross-site in prod
     },
   })
 );
 
-// Optional debug middleware (local only)
-if (process.env.NODE_ENV !== "production") {
-  app.use((req, res, next) => {
-    console.log("Session object:", req.session);
-    console.log("Logged-in user:", req.user);
-    next();
-  });
-}
-
-// Passport initialization
 app.use(passport.initialize());
 app.use(passport.session());
 initPass(passport);
-
-// Flash messages
 app.use(flash());
+
+// ---------- Start server ----------
+app.listen(PORT, () => {
+  console.log(`[INFO]: Server running on port ${PORT}`);
+});
+
 // ---------------- Landing Page ----------------
 app.get("/", (req, res) => {
   res.render("index"); // renders your index.ejs
@@ -85,8 +77,13 @@ app.get("/demo/:role", async (req, res) => {
     return res.redirect("/login");
   }
 
-  // Send webhook for demo login
-  await sendWebhook("DEMO_LOGIN_USED", { role, email: demoEmail });
+  // ✅ Send webhook for demo login usage
+  try {
+    await sendWebhook("DEMO_LOGIN_USED", { role, ip: req.ip });
+    console.log(`Webhook sent for demo login as ${role}`);
+  } catch (err) {
+    console.error("Failed to send webhook:", err);
+  }
 
   res.render("login", { messages: req.flash(), demoEmail, demoPassword });
 });
@@ -105,7 +102,11 @@ app.post("/login", passport.authenticate("local", {
   successRedirect: "/dashboard",
   failureRedirect: "/login",
   failureFlash: true
-}));
+}), async (req, res) => {
+  // Optional: webhook on successful login
+  await sendWebhook("USER_LOGGED_IN", { email: req.user.email, role: req.user.role });
+});
+
 
 // Test email route
 app.get("/test-email", async (req, res) => {
@@ -883,6 +884,3 @@ app.post("/admin/users/edit/:id", ensureAuthenticated, permitRoles("admin"), asy
 });
 
 
-app.listen(PORT, () => {
-  console.log(`[INFO]: Server running on port ${PORT}`);
-});
