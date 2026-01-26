@@ -14,6 +14,7 @@ const { redirectAuthenticated, ensureAuthenticated, permitRoles } = require("./m
 const logAudit = require("./auditlogger");
 const logger = require("./logger"); // Winston logger
 const sendEmail = require("./sendemail");
+const sendWebhook = require("./webhooks");
 
 // Port
 const PORT = process.env.PORT || 3000;
@@ -69,7 +70,7 @@ app.get("/", (req, res) => {
 });
 
 // ---------------- Demo Login Route ----------------
-app.get("/demo/:role", (req, res) => {
+app.get("/demo/:role", async (req, res) => {
   const { role } = req.params;
   let demoEmail = "";
   let demoPassword = "";
@@ -81,11 +82,12 @@ app.get("/demo/:role", (req, res) => {
     demoEmail = "employee@officecore.demo";
     demoPassword = "Employee@123";
   } else {
-    // if someone types wrong role, redirect to login page
     return res.redirect("/login");
   }
 
-  // render login.ejs with pre-filled demo credentials
+  // Send webhook for demo login
+  await sendWebhook("DEMO_LOGIN_USED", { role, email: demoEmail });
+
   res.render("login", { messages: req.flash(), demoEmail, demoPassword });
 });
 
@@ -104,10 +106,6 @@ app.post("/login", passport.authenticate("local", {
   failureRedirect: "/login",
   failureFlash: true
 }));
-
-app.post("/register", async (req, res) => {
-  // your existing registration logic here
-});
 
 // Test email route
 app.get("/test-email", async (req, res) => {
@@ -139,10 +137,15 @@ app.post("/register", async (req, res) => {
     if (result.rows.length > 0) {
       return res.render("register", { error: [{ message: "Email already exists" }] });
     }
+
     await pool.query(
       "INSERT INTO users (name,email,password,role) VALUES ($1,$2,$3,$4)",
       [name, email, hashpass, "employee"]
     );
+
+    // ✅ Send webhook after successful registration
+    await sendWebhook("USER_REGISTERED", { name, email, role: "EMPLOYEE" });
+
     req.flash("success_msg", "You are successfully registered");
     res.redirect("/login");
   } catch (err) {
@@ -150,6 +153,7 @@ app.post("/register", async (req, res) => {
     res.send(err.message);
   }
 });
+
 app.use((req, res, next) => {
   console.log("Session:", req.session);
   console.log("User:", req.user);
