@@ -63,11 +63,10 @@
           <tr>
             <td><%= leave.id || "-" %></td>
             <td><%= leave.employee_name || "-" %></td>
-            <td><%= leave.start_date ? leave.start_date.toISOString().slice(0,10) : "-" %></td>
-            <td><%= leave.end_date ? leave.end_date.toISOString().slice(0,10) : "-" %></td>
+            <td><%= leave.start_date ? new Date(leave.start_date).toISOString().slice(0,10) : "-" %></td>
+            <td><%= leave.end_date ? new Date(leave.end_date).toISOString().slice(0,10) : "-" %></td>
             <td><%= leave.reason || "-" %></td>
-            <td><%= leave.created_at ? leave.created_at.toISOString().slice(0,10) : "-" %></td>
-          </tr>
+            <td><%= leave.created_at ? new Date(leave.created_at).toISOString().slice(0,10) : "-" %></td>          </tr>
         <% }) %>
       <% } else { %>
         <tr><td colspan="6" style="text-align:center;">No pending requests</td></tr>
