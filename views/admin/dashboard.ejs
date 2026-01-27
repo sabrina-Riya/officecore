@@ -7,19 +7,16 @@
     body { font-family: Arial, sans-serif; background:#f4f6f8; padding:20px; }
     .card { display:inline-block; padding:20px; margin:10px; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,0.1); border-radius:8px; width:200px; text-align:center; text-decoration:none; color:#333; }
     h3 { margin-bottom:10px; }
-    table { width:100%; border-collapse: collapse; margin-top:20px; }
-    th, td { padding:10px; border:1px solid #ddd; }
-    th { background:#333; color:#fff; }
   </style>
 </head>
 <body>
   <% 
-    const safeAdminName = adminName || "Admin";
-    const safeTotalUsers = totalUsers || 0;
-    const safePendingLeave = pendingLeave || 0;
-    const safeApprovedLeave = approvedLeave || 0;
-    const safeRejectedLeave = rejectedLeave || 0;
-    const safeRecentPendingLeave = Array.isArray(recentPendingLeave) ? recentPendingLeave : [];
+    // Safe defaults
+    const safeAdminName = typeof adminName !== 'undefined' ? adminName : "Admin";
+    const safeTotalUsers = typeof totalUsers !== 'undefined' ? totalUsers : 0;
+    const safePendingLeave = typeof pendingLeave !== 'undefined' ? pendingLeave : 0;
+    const safeApprovedLeave = typeof approvedLeave !== 'undefined' ? approvedLeave : 0;
+    const safeRejectedLeave = typeof rejectedLeave !== 'undefined' ? rejectedLeave : 0;
   %>
 
   <h2>Welcome, <%= safeAdminName %></h2>
@@ -43,35 +40,5 @@
       <p><%= safeRejectedLeave %></p>
     </a>
   </div>
-
-  <h3>Recent Pending Leave Requests</h3>
-  <table>
-    <thead>
-      <tr>
-        <th>ID</th>
-        <th>Employee</th>
-        <th>Start Date</th>
-        <th>End Date</th>
-        <th>Reason</th>
-        <th>Created At</th>
-      </tr>
-    </thead>
-    <tbody>
-      <% if (safeRecentPendingLeave.length > 0) { %>
-        <% safeRecentPendingLeave.forEach(leave => { %>
-          <tr>
-            <td><%= leave.id || "-" %></td>
-            <td><%= leave.employee_name || "-" %></td>
-            <td><%= leave.start_date ? new Date(leave.start_date).toISOString().slice(0,10) : "-" %></td>
-            <td><%= leave.end_date ? new Date(leave.end_date).toISOString().slice(0,10) : "-" %></td>
-            <td><%= leave.reason || "-" %></td>
-            <td><%= leave.created_at ? new Date(leave.created_at).toISOString().slice(0,10) : "-" %></td>
-          </tr>
-        <% }) %>
-      <% } else { %>
-        <tr><td colspan="6" style="text-align:center;">No pending requests</td></tr>
-      <% } %>
-    </tbody>
-  </table>
 </body>
 </html>
