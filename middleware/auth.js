@@ -12,24 +12,18 @@ function ensureAuthenticated(req, res, next) {
   return res.redirect("/login");
 }
 
-function permitRoles(...allowedRoles) {
+function permitRoles(...roles) {
   return (req, res, next) => {
-    if (!req.user || !req.user.role) {
-      req.flash("err_msg", "Access denied");
-      return res.redirect("/login");
+    // convert both role from DB and allowed roles to lowercase
+    const userRole = req.user?.role?.toLowerCase();
+    const allowedRoles = roles.map(r => r.toLowerCase());
+    
+    if (!userRole || !allowedRoles.includes(userRole)) {
+      return res.status(403).send("Forbidden");
     }
-
-    const userRole = req.user.role.toLowerCase(); // ✅ FIX IS HERE
-
-    if (!allowedRoles.map(r => r.toLowerCase()).includes(userRole)) {
-      req.flash("err_msg", "Forbidden: insufficient permissions");
-      return res.redirect("/login");
-    }
-
     next();
   };
 }
-
 
 module.exports = {
   redirectAuthenticated,
