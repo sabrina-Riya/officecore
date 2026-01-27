@@ -1,80 +1,41 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <title>Audit Logs</title>
   <style>
-    body { font-family: Arial; background:#f4f6f8; padding:20px; }
-    table { width:100%; border-collapse:collapse; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
+    table { width:100%; border-collapse: collapse; }
     th, td { padding:10px; border:1px solid #ddd; }
     th { background:#333; color:#fff; }
-    .filter { margin-bottom:15px; }
-    .pagination a { margin:0 5px; padding:6px 12px; background:#007bff; color:#fff; text-decoration:none; border-radius:4px; }
-    .pagination strong { margin:0 5px; }
-    a { color:#007bff; text-decoration:none; }
   </style>
 </head>
 <body>
-
-<h2>Audit Logs</h2>
-
-<div class="filter">
-  <form method="GET">
-    <select name="action">
-      <option value="all" <%= (!filterAction || filterAction==="all")?"selected":"" %>>All Actions</option>
-      <option value="LEAVE_APPROVED" <%= filterAction==="LEAVE_APPROVED"?"selected":"" %>>Leave Approved</option>
-      <option value="LEAVE_REJECTED" <%= filterAction==="LEAVE_REJECTED"?"selected":"" %>>Leave Rejected</option>
-      <option value="USER_STATUS_CHANGED" <%= filterAction==="USER_STATUS_CHANGED"?"selected":"" %>>User Status Changed</option>
-    </select>
-    <button type="submit">Filter</button>
-  </form>
-</div>
-
-<table>
-  <thead>
-    <tr>
-      <th>Date</th>
-      <th>Action</th>
-      <th>Performed By</th>
-      <th>Target</th>
-      <th>Old Status</th>
-      <th>New Status</th>
-      <th>Message</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% if (logs && logs.length > 0) { %>
+  <h2>Audit Logs</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Action</th>
+        <th>Performed By</th>
+        <th>Target Table</th>
+        <th>Target ID</th>
+        <th>Message</th>
+        <th>Created At</th>
+      </tr>
+    </thead>
+    <tbody>
       <% logs.forEach(log => { %>
         <tr>
-          <td><%= log.created_at ? new Date(log.created_at).toLocaleString() : "-" %></td>
-          <td><%= log.action || "-" %></td>
-          <td><%= log.performed_by_name || "System" %></td>
-          <td><%= log.target_table ? log.target_table : "-" %> (<%= log.target_id || "-" %>)</td>
-          <td><%= log.old_status || "-" %></td>
-          <td><%= log.new_status || "-" %></td>
+          <td><%= log.id %></td>
+          <td><%= log.action %></td>
+          <td><%= log.performed_by_name || "-" %></td>
+          <td><%= log.target_table %></td>
+          <td><%= log.target_id %></td>
           <td><%= log.message || "-" %></td>
+          <td><%= log.created_at ? new Date(log.created_at).toISOString().slice(0,10) : "-" %></td>
         </tr>
       <% }) %>
-    <% } else { %>
-      <tr><td colspan="7">No audit logs found</td></tr>
-    <% } %>
-  </tbody>
-</table>
-
-<div class="pagination">
-  <% if (totalPages && totalPages > 0) { %>
-    <% for(let i=1;i<=totalPages;i++){ %>
-      <% if(i===currentPage){ %>
-        <strong><%= i %></strong>
-      <% } else { %>
-        <a href="?page=<%= i %>&action=<%= filterAction || 'all' %>"><%= i %></a>
-      <% } %>
-    <% } %>
-  <% } %>
-</div>
-
-<br>
-<a href="/admin/dashboard">⬅ Back to Dashboard</a>
-
+    </tbody>
+  </table>
 </body>
 </html>

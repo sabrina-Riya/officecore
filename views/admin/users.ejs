@@ -1,64 +1,47 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Admin User Management</title>
-<style>
-  body { font-family: Arial; background:#f4f6f8; padding:20px; }
-  h2 { color:#333; }
-  table { width:100%; border-collapse:collapse; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,0.1); margin-top:20px; }
-  th, td { padding:12px; border-bottom:1px solid #ddd; text-align:center; }
-  th { background:#007bff; color:#fff; }
-  tr.inactive { background:#f8d7da; opacity:0.85; }
-  button { padding:6px 10px; border:none; border-radius:4px; cursor:pointer; font-size:13px; }
-  .deactivate { background:#dc3545; color:#fff; }
-  .activate { background:#28a745; color:#fff; }
-  .role-btn { background:#6f42c1; color:#fff; }
-  .edit-btn { background:#ffc107; color:#000; padding:6px 10px; border-radius:4px; text-decoration:none; font-size:13px; }
-  a { margin-right:15px; color:#007bff; text-decoration:none; }
-</style>
+  <meta charset="UTF-8">
+  <title>Users</title>
+  <style>
+    table { width:100%; border-collapse: collapse; }
+    th, td { padding:10px; border:1px solid #ddd; }
+    th { background:#333; color:#fff; }
+    a { text-decoration:none; color:#333; }
+  </style>
 </head>
 <body>
-
-<h2>All Users</h2>
-
-<table>
-<thead>
-<tr>
-  <th>ID</th><th>Name</th><th>Email</th><th>Role</th><th>Status</th><th>Actions</th>
-</tr>
-</thead>
-<tbody>
-<% if (users && users.length > 0) { %>
-  <% users.forEach(user => { %>
-    <tr class="<%= user.is_active ? '' : 'inactive' %>">
-      <td><%= user.id %></td>
-      <td><%= user.name %></td>
-      <td><%= user.email %></td>
-      <td><%= user.role || '-' %></td>
-      <td><%= user.is_active ? 'Active':'Inactive' %></td>
-      <td>
-        <form action="/admin/users/<%= user.id %>" method="POST" style="display:inline;">
-          <button class="<%= user.is_active ? 'deactivate':'activate' %>">
-            <%= user.is_active ? 'Deactivate':'Activate' %>
-          </button>
-        </form>
-        <form action="/admin/users/role/<%= user.id %>" method="POST" style="display:inline;">
-          <button class="role-btn"><%= user.role==='admin'?'Make Employee':'Make Admin' %></button>
-        </form>
-        <a href="/admin/users/edit/<%= user.id %>" class="edit-btn">Edit</a>
-      </td>
-    </tr>
-  <% }) %>
-<% } else { %>
-  <tr><td colspan="6">No users found</td></tr>
-<% } %>
-</tbody>
-</table>
-
-<br>
-<a href="/admin/dashboard">⬅ Back to Dashboard</a>
-<a href="/logout">Logout</a>
-
+  <h2>All Users</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Name</th>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Active</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% users.forEach(user => { %>
+        <tr>
+          <td><%= user.id %></td>
+          <td><%= user.name %></td>
+          <td><%= user.email %></td>
+          <td><%= user.role %></td>
+          <td><%= user.is_active ? "Yes" : "No" %></td>
+          <td>
+            <a href="/admin/users/edit/<%= user.id %>">Edit</a>
+            <% if (user.id !== userId) { %>
+              <form action="/admin/users/<%= user.id %>" method="POST" style="display:inline">
+                <button type="submit"><%= user.is_active ? "Deactivate" : "Activate" %></button>
+              </form>
+            <% } %>
+          </td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
 </body>
 </html>

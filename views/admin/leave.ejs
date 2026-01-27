@@ -2,119 +2,40 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Manage Leaves</title>
+  <title>Leaves</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6f8;
-      margin: 0;
-      padding: 20px;
-    }
-
-    h2 { margin-bottom: 20px; color: #333; }
-
-    a { text-decoration: none; color: #007bff; font-weight: bold; }
-
-    .top-links { margin-bottom: 20px; }
-    .top-links a { margin-right: 15px; }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: #fff;
-      margin-top: 20px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      border-radius: 8px;
-      overflow: hidden;
-    }
-
-    th, td {
-      padding: 12px;
-      text-align: center;
-      border-bottom: 1px solid #eee;
-    }
-
-    th { background: #007bff; color: #fff; }
-
-    button {
-      padding: 4px 8px;
-      margin: 2px;
-      cursor: pointer;
-      border: none;
-      border-radius: 4px;
-    }
-
-    .approve { background: #28a745; color: #fff; }
-    .reject { background: #dc3545; color: #fff; }
-    input.reject-reason { width: 120px; padding: 3px; }
-
-    footer { margin-top: 40px; color: #666; text-align: center; }
+    table { width:100%; border-collapse: collapse; }
+    th, td { padding:10px; border:1px solid #ddd; }
+    th { background:#333; color:#fff; }
   </style>
 </head>
 <body>
-
-<div class="top-links">
-  <a href="/admin/dashboard">Dashboard</a>
-  <a href="/logout">Logout</a>
-</div>
-
-<h2>All Leave Requests</h2>
-
-<table>
-  <thead>
-    <tr>
-      <th>ID</th>
-      <th>Employee</th>
-      <th>Start Date</th>
-      <th>End Date</th>
-      <th>Reason</th>
-      <th>Status</th>
-      <th>Rejection Reason</th>
-      <th>Actioned By</th>
-      <th>Actions</th>
-    </tr>
-  </thead>
-  <tbody>
-    <% if (leaves && leaves.length > 0) { %>
-      <% leaves.forEach(l => { %>
+  <h2>Leave Requests</h2>
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Employee</th>
+        <th>Start</th>
+        <th>End</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% leaves.forEach(leave => { %>
         <tr>
-          <td><%= l.id %></td>
-          <td><%= l.employee_name %></td>
-          <td><%= l.start_date ? new Date(l.start_date).toLocaleDateString() : '-' %></td>
-          <td><%= l.end_date ? new Date(l.end_date).toLocaleDateString() : '-' %></td>
-          <td><%= l.reason || '-' %></td>
-          <td><%= l.status || '-' %></td>
-          <td><%= l.rejection_reason || '-' %></td>
-          <td><%= l.actioned_by || '-' %></td>
+          <td><%= leave.id %></td>
+          <td><%= leave.employee_name %></td>
+          <td><%= leave.start_date ? new Date(leave.start_date).toISOString().slice(0,10) : "-" %></td>
+          <td><%= leave.end_date ? new Date(leave.end_date).toISOString().slice(0,10) : "-" %></td>
+          <td><%= leave.status %></td>
           <td>
-            <% if (l.status === "pending") { %>
-              <form action="/admin/leave/approve/<%= l.id %>" method="POST" style="display:inline;">
-                <button class="approve" type="submit">Approve</button>
-              </form>
-              <form action="/admin/leave/reject/<%= l.id %>" method="POST" style="display:inline;">
-                <input type="text" name="reason" class="reject-reason" placeholder="Reason" required>
-                <button class="reject" type="submit">Reject</button>
-              </form>
-            <% } %>
+            <a href="/admin/leave/<%= leave.id %>">View</a>
           </td>
         </tr>
       <% }) %>
-    <% } else { %>
-      <tr><td colspan="9">No leave requests found</td></tr>
-    <% } %>
-  </tbody>
-</table>
-
-<!-- Flash Messages -->
-<script>
-  <% if (success_msg && success_msg.length) { %>
-    alert("<%= Array.isArray(success_msg) ? success_msg.join('\\n') : success_msg %>");
-  <% } %>
-  <% if (err_msg && err_msg.length) { %>
-    alert("<%= Array.isArray(err_msg) ? err_msg.join('\\n') : err_msg %>");
-  <% } %>
-</script>
-
-<footer>© 2025 OfficeCore</footer>
+    </tbody>
+  </table>
 </body>
 </html>
