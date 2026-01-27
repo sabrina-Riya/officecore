@@ -18,7 +18,6 @@
     const safePendingLeave = typeof pendingLeave !== 'undefined' ? pendingLeave : 0;
     const safeApprovedLeave = typeof approvedLeave !== 'undefined' ? approvedLeave : 0;
     const safeRejectedLeave = typeof rejectedLeave !== 'undefined' ? rejectedLeave : 0;
-    const safeRecentPendingLeave = Array.isArray(recentPendingLeave) ? recentPendingLeave : [];
   %>
 
   <h2>Welcome, <%= safeAdminName %></h2>
