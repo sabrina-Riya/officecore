@@ -2,16 +2,20 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Users</title>
+  <title>Admin - Users</title>
   <style>
-    table { width:100%; border-collapse: collapse; }
-    th, td { padding:10px; border:1px solid #ddd; }
-    th { background:#333; color:#fff; }
-    a { text-decoration:none; color:#333; }
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f4f6f8; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+    th, td { padding: 10px; border: 1px solid #ddd; text-align: center; }
+    th { background: #333; color: #fff; }
+    button { padding: 5px 10px; margin: 2px; }
   </style>
 </head>
 <body>
   <h2>All Users</h2>
+
+  <% include ./partials/messages %>
+
   <table>
     <thead>
       <tr>
@@ -19,7 +23,7 @@
         <th>Name</th>
         <th>Email</th>
         <th>Role</th>
-        <th>Active</th>
+        <th>Status</th>
         <th>Actions</th>
       </tr>
     </thead>
@@ -30,14 +34,26 @@
           <td><%= user.name %></td>
           <td><%= user.email %></td>
           <td><%= user.role %></td>
-          <td><%= user.is_active ? "Yes" : "No" %></td>
+          <td><%= user.is_active ? "Active" : "Inactive" %></td>
           <td>
-            <a href="/admin/users/edit/<%= user.id %>">Edit</a>
-            <% if (user.id !== userId) { %>
-              <form action="/admin/users/<%= user.id %>" method="POST" style="display:inline">
-                <button type="submit"><%= user.is_active ? "Deactivate" : "Activate" %></button>
-              </form>
-            <% } %>
+            <!-- Activate/Deactivate -->
+            <form method="POST" action="/admin/users/<%= user.id %>" style="display:inline;">
+              <button type="submit">
+                <%= user.is_active ? "Deactivate" : "Activate" %>
+              </button>
+            </form>
+
+            <!-- Change Role -->
+            <form method="POST" action="/admin/users/role/<%= user.id %>" style="display:inline;">
+              <button type="submit">
+                Change Role
+              </button>
+            </form>
+
+            <!-- Edit User -->
+            <a href="/admin/users/edit/<%= user.id %>">
+              <button>Edit</button>
+            </a>
           </td>
         </tr>
       <% }) %>
