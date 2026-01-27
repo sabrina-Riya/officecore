@@ -59,51 +59,51 @@
       margin-bottom: 30px;
     }
 
-    form {
-      display: flex;
-      flex-direction: column;
-      gap: 15px;
-      background: #fff;
-      padding: 25px;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0,0,0,0.1);
-      min-width: 300px;
-    }
-
-    input {
-      padding: 10px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      font-size: 1rem;
-    }
-
-    button {
-      padding: 12px;
-      border-radius: 8px;
-      border: none;
-      background-color: #28a745;
-      color: #fff;
-      font-weight: 600;
-      cursor: pointer;
-      transition: all 0.2s;
-    }
-
-    button:hover {
-      background-color: #218838;
-    }
-
     .flash {
-      color: red;
-      font-size: 0.9rem;
-      font-weight: 600;
+      background: #ffdddd;
+      border: 1px solid #ff5c5c;
+      padding: 10px;
+      margin-bottom: 10px;
+      border-radius: 5px;
+      color: #900;
+      max-width: 400px;
       text-align: center;
     }
 
-    @media (max-width: 480px) {
-      h1 { font-size: 2rem; }
-      h2 { font-size: 1rem; }
-      .links a { padding: 10px 20px; font-size: 0.9rem; }
-      form { min-width: auto; width: 90%; }
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      max-width: 400px;
+      width: 100%;
+    }
+
+    input[type="email"], input[type="password"] {
+      padding: 10px;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+      width: 100%;
+    }
+
+    button {
+      padding: 10px;
+      border-radius: 5px;
+      border: none;
+      background-color: #007bff;
+      color: white;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background-color 0.2s ease-in-out;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    footer {
+      font-size: 0.8rem;
+      color: #888;
+      margin-top: 30px;
     }
   </style>
 </head>
@@ -112,29 +112,26 @@
   <h1>Welcome to OfficeCore</h1>
   <h2>Role-Based Enterprise Management System</h2>
 
+  <!-- Flash / Error messages -->
+  <% if (typeof error !== 'undefined' && error && error.length > 0) { %>
+    <% error.forEach(msg => { %>
+      <div class="flash"><%= msg %></div>
+    <% }) %>
+  <% } %>
+
+  <form action="/login" method="POST">
+    <input type="email" name="email" placeholder="Email" required>
+    <input type="password" name="password" placeholder="Password" required>
+    <button type="submit">Login</button>
+  </form>
+
   <div class="links">
-    <a href="/login">Login</a>
     <a href="/register">Register Account</a>
   </div>
 
   <div class="disclaimer">
      ⚠️ Make sure to register an account to access the system. Only authorized users can log in.
   </div>
-
-  <!-- LOGIN FORM -->
-  <form action="/login" method="POST">
-    
-    <!-- Flash / Error messages -->
-    <% if (error && error.length > 0) { %>
-      <% error.forEach(msg => { %>
-        <div class="flash"><%= msg %></div>
-      <% }) %>
-    <% } %>
-
-    <input type="email" name="email" placeholder="Email" required />
-    <input type="password" name="password" placeholder="Password" required />
-    <button type="submit">Login</button>
-  </form>
 
   <footer>
     © 2025 OfficeCore
