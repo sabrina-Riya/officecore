@@ -6,79 +6,83 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f4f6f8;
-      padding: 40px;
-      text-align: center;
-    }
-
-    h1, h2 {
+      background: #f4f6f8;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      padding: 20px;
       color: #333;
     }
 
-    .demo-buttons {
-      margin: 20px 0;
+    h1 {
+      font-size: 2.5rem;
+      margin-bottom: 10px;
+      color: #111;
     }
 
-    .demo-buttons a {
-      display: inline-block;
-      margin: 10px;
-      padding: 10px 20px;
-      background-color: #28a745;
-      color: white;
-      border-radius: 6px;
+    h2 {
+      font-weight: 400;
+      color: #555;
+      margin-bottom: 30px;
+    }
+
+    .links {
+      display: flex;
+      gap: 15px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+
+    .links a {
       text-decoration: none;
-      font-weight: bold;
-    }
-
-    .demo-buttons a:hover {
-      background-color: #1e7e34;
-    }
-
-    a.normal-link {
+      padding: 12px 25px;
+      border-radius: 8px;
+      font-weight: 600;
+      transition: all 0.2s ease-in-out;
       display: inline-block;
-      margin: 10px;
-      padding: 10px 20px;
       background-color: #007bff;
       color: white;
-      border-radius: 6px;
-      text-decoration: none;
-      font-weight: bold;
     }
 
-    a.normal-link:hover {
+    .links a:hover {
       background-color: #0056b3;
     }
 
     .disclaimer {
-      font-size: 0.9em;
+      font-size: 0.85rem;
       color: #555;
-      margin-top: 20px;
+      text-align: center;
+      max-width: 400px;
+      margin-bottom: 30px;
     }
 
     footer {
-      margin-top: 40px;
-      font-size: 0.9em;
-      color: #666;
+      font-size: 0.8rem;
+      color: #888;
+    }
+
+    @media (max-width: 480px) {
+      h1 { font-size: 2rem; }
+      h2 { font-size: 1rem; }
+      .links a { padding: 10px 20px; font-size: 0.9rem; }
     }
   </style>
 </head>
 <body>
 
-  <h1> Welcome to OfficeCore</h1>
+  <h1>Welcome to OfficeCore</h1>
   <h2>Role-Based Enterprise Management System</h2>
 
-  <p>Try the demo instantly without registering:</p>
-
-  <div class="demo-buttons">
-    <a href="/demo/admin"> Login as Admin</a>
-    <a href="/demo/employee"> Login as Employee</a>
+  <div class="links">
+    <a href="/login">Login</a>
+    <a href="/register">Register Account</a>
   </div>
 
-  <a href="/login" class="normal-link"> Normal Login</a>
-  <a href="/register" class="normal-link"> Register Account</a>
-
   <div class="disclaimer">
-     Demo accounts are reset periodically. Some actions are disabled for safety.
+     ⚠️ Make sure to register an account to access the system. Only authorized users can log in.
   </div>
 
   <footer>

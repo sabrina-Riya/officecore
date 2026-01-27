@@ -1,24 +1,17 @@
 <!DOCTYPE html>
 <html>
 <head>
+  <meta charset="UTF-8">
   <title>Audit Logs</title>
   <style>
     body { font-family: Arial; background:#f4f6f8; padding:20px; }
-    table { width:100%; border-collapse:collapse; background:#fff; }
+    table { width:100%; border-collapse:collapse; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
     th, td { padding:10px; border:1px solid #ddd; }
     th { background:#333; color:#fff; }
     .filter { margin-bottom:15px; }
-    .pagination a {
-      margin: 0 5px;
-      padding: 6px 12px;
-      background: #007bff;
-      color: #fff;
-      text-decoration: none;
-      border-radius: 4px;
-    }
-    .pagination strong {
-      margin: 0 5px;
-    }
+    .pagination a { margin:0 5px; padding:6px 12px; background:#007bff; color:#fff; text-decoration:none; border-radius:4px; }
+    .pagination strong { margin:0 5px; }
+    a { color:#007bff; text-decoration:none; }
   </style>
 </head>
 <body>
@@ -29,36 +22,39 @@
   <form method="GET">
     <select name="action">
       <option value="all">All Actions</option>
-      <option value="LEAVE_APPROVED" <%= filterAction==="LEAVE_APPROVED" ? "selected" : "" %>>Leave Approved</option>
-      <option value="LEAVE_REJECTED" <%= filterAction==="LEAVE_REJECTED" ? "selected" : "" %>>Leave Rejected</option>
-      <option value="USER_STATUS_CHANGED" <%= filterAction==="USER_STATUS_CHANGED" ? "selected" : "" %>>User Status Changed</option>
+      <option value="LEAVE_APPROVED" <%= filterAction==="LEAVE_APPROVED"?"selected":"" %>>Leave Approved</option>
+      <option value="LEAVE_REJECTED" <%= filterAction==="LEAVE_REJECTED"?"selected":"" %>>Leave Rejected</option>
+      <option value="USER_STATUS_CHANGED" <%= filterAction==="USER_STATUS_CHANGED"?"selected":"" %>>User Status Changed</option>
     </select>
     <button type="submit">Filter</button>
   </form>
 </div>
 
 <table>
-  <tr>
-    <th>Date</th>
-    <th>Action</th>
-    <th>Performed By</th>
-    <th>Target</th>
-    <th>Old Status</th>
-    <th>New Status</th>
-    <th>Message</th>
-  </tr>
-
-  <% logs.forEach(log => { %>
+  <thead>
     <tr>
-      <td><%= new Date(log.created_at).toLocaleString() %></td>
-      <td><%= log.action %></td>
-      <td><%= log.performed_by_name || "System" %></td>
-      <td><%= log.target_table %> (#<%= log.target_id %>)</td>
-      <td><%= log.old_status || "-" %></td>
-      <td><%= log.new_status || "-" %></td>
-      <td><%= log.message || "-" %></td>
+      <th>Date</th>
+      <th>Action</th>
+      <th>Performed By</th>
+      <th>Target</th>
+      <th>Old Status</th>
+      <th>New Status</th>
+      <th>Message</th>
     </tr>
-  <% }) %>
+  </thead>
+  <tbody>
+    <% logs.forEach(log => { %>
+      <tr>
+        <td><%= new Date(log.created_at).toLocaleString() %></td>
+        <td><%= log.action %></td>
+        <td><%= log.performed_by_name || "System" %></td>
+        <td><%= log.target_table %> (#<%= log.target_id %>)</td>
+        <td><%= log.old_status || "-" %></td>
+        <td><%= log.new_status || "-" %></td>
+        <td><%= log.message || "-" %></td>
+      </tr>
+    <% }) %>
+  </tbody>
 </table>
 
 <div class="pagination">

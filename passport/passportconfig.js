@@ -1,79 +1,42 @@
 const LocalStrategy = require("passport-local").Strategy;
-const { Pool } = require("pg");
 const bcrypt = require("bcrypt");
+const { pool } = require("../dbconfig"); // Make sure this path is correct
 
-// Create a pool if not already exported elsewhere
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: { rejectUnauthorized: false },
-});
+function init(passport) {
+  const authUser = (email, password, done) => {
+    if (!pool) return done(new Error("Database pool is not defined"));
 
-function initialize(passport) {
-
-  // 🔐 LOCAL STRATEGY
-  const authenticateUser = async (email, password, done) => {
-    try {
-      const normalizedEmail = email.trim().toLowerCase();
-
-      const result = await pool.query(
-        `SELECT id, name, email, password, role, is_active 
-         FROM users 
-         WHERE email = $1`,
-        [normalizedEmail]
-      );
+    pool.query("SELECT * FROM users WHERE email=$1", [email], (err, result) => {
+      if (err) return done(err);
 
       if (result.rows.length === 0) {
-        return done(null, false, { message: "No user found with that email" });
+        return done(null, false, { message: "Email not registered" });
       }
 
       const user = result.rows[0];
 
-      if (!user.is_active) {
-        return done(null, false, { message: "Your account is deactivated" });
-      }
+      bcrypt.compare(password, user.password, (err, isMatch) => {
+        if (err) return done(err);
 
-      // ✅ Compare password with hashed version
-      const isMatch = await bcrypt.compare(password, user.password);
-      if (!isMatch) {
-        return done(null, false, { message: "Incorrect password" });
-      }
+        if (!isMatch) return done(null, false, { message: "Incorrect password" });
+        if (!user.is_active) return done(null, false, { message: "User is inactive" });
 
-      // ✅ Successful login
-      return done(null, user);
-
-    } catch (err) {
-      return done(err);
-    }
+        return done(null, user);
+      });
+    });
   };
 
   passport.use(
-    new LocalStrategy(
-      {
-        usernameField: "email",
-        passwordField: "password",
-      },
-      authenticateUser
-    )
+    new LocalStrategy({ usernameField: "email", passwordField: "password" }, authUser)
   );
 
-  // 📦 Store user ID in session
-  passport.serializeUser((user, done) => {
-    done(null, user.id);
-  });
-
-  // 🔄 Attach user object to req.user
-  passport.deserializeUser(async (id, done) => {
-    try {
-      const result = await pool.query(
-        "SELECT id, name, email, role, is_active FROM users WHERE id=$1",
-        [id]
-      );
-      if (!result.rows[0]) return done(new Error("User not found"));
+  passport.serializeUser((user, done) => done(null, user.id));
+  passport.deserializeUser((id, done) => {
+    pool.query("SELECT * FROM users WHERE id=$1", [id], (err, result) => {
+      if (err) return done(err);
       done(null, result.rows[0]);
-    } catch (err) {
-      done(err);
-    }
+    });
   });
 }
 
-module.exports = initialize;
+module.exports = init;

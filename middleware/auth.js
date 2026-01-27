@@ -1,41 +1,38 @@
-function redirectAuthenticated(req,res,next){
-  if(req.isAuthenticated()){
-    if(req.user.role=="admin"){
-
-      return res.redirect("/admin/dashboard");
-    }
-    return res.redirect("/employee/dashboard");//res.redirect/render stps request completely but next helps to keep o moving
+function redirectAuthenticated(req, res, next) {
+  if (req.isAuthenticated() && req.user?.role) {
+    const role = req.user.role.toLowerCase();
+    if (role === "admin") return res.redirect("/admin/dashboard");
+    if (role === "employee") return res.redirect("/employee/dashboard");
   }
-  next(); // checkauthenticated is there to check  if already registered or not 
-  //iif registered sends to the dashboard if not login  and then pass it to the register route
-
-}
-function ensureAuthenticated(req,res,next){
-  if(req.isAuthenticated()){
-    return next();
-  }
-  res.redirect("/login");
+  next();
 }
 
-//role based rbac
-function permitRoles(...allowedRoles){
-  return (req,res,next)=>{
-    if(!req.user){
-      return res.status(401).send("unauthorized");
+function ensureAuthenticated(req, res, next) {
+  if (req.isAuthenticated()) return next();
+  return res.redirect("/login");
+}
+
+function permitRoles(...allowedRoles) {
+  return (req, res, next) => {
+    if (!req.user || !req.user.role) {
+      req.flash("err_msg", "Access denied");
+      return res.redirect("/login");
     }
-    const{role}=req.user;
-    if(!allowedRoles.includes(role)){
-      return res.status(403).send("Forbidden:you dont have required roles");
+
+    const userRole = req.user.role.toLowerCase(); // ✅ FIX IS HERE
+
+    if (!allowedRoles.map(r => r.toLowerCase()).includes(userRole)) {
+      req.flash("err_msg", "Forbidden: insufficient permissions");
+      return res.redirect("/login");
     }
+
     next();
-
-  }
+  };
 }
 
 
-module.exports={
+module.exports = {
   redirectAuthenticated,
   ensureAuthenticated,
-  permitRoles
-
-}
+  permitRoles,
+};

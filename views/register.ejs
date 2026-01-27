@@ -6,23 +6,27 @@
   <style>
     body {
       font-family: Arial, sans-serif;
-      background-color: #f4f6f8;
+      background: #f4f6f8;
       display: flex;
       flex-direction: column;
       align-items: center;
+      justify-content: center;
+      min-height: 100vh;
       padding: 40px;
-    }
-
-    h2 {
       color: #333;
     }
 
+    h2 {
+      margin-bottom: 20px;
+      color: #111;
+    }
+
     form {
-      background-color: #fff;
+      background: #fff;
       padding: 20px;
       width: 300px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
       border-radius: 8px;
+      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
     }
 
     input {
@@ -35,22 +39,27 @@
 
     button {
       width: 100%;
-      padding: 8px;
-      background-color: #007bff;
-      color: #fff;
+      padding: 10px;
+      background: #007bff;
+      color: white;
       border: none;
-      cursor: pointer;
       border-radius: 4px;
       font-weight: bold;
+      cursor: pointer;
+      transition: 0.2s;
     }
 
     button:hover {
-      background-color: #0056b3;
+      background: #0056b3;
     }
 
     .message {
       margin-bottom: 10px;
       color: red;
+    }
+
+    .message.success {
+      color: green;
     }
 
     a {
@@ -75,7 +84,7 @@
 
   <h2>Register</h2>
 
-  <% if(error && error.length > 0){ %>
+  <% if (error && error.length > 0) { %>
     <% error.forEach(err => { %>
       <div class="message"><%= err.message %></div>
     <% }) %>

@@ -1,23 +1,62 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<title>Manage Leaves</title>
-<style>
-  body { font-family: Arial, sans-serif; background: #f4f6f8; margin: 30px; }
-  h2 { color: #333; }
+  <meta charset="UTF-8">
+  <title>Manage Leaves</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background: #f4f6f8;
+      margin: 0;
+      padding: 20px;
+    }
 
-  table { width:100%; border-collapse: collapse; background:#fff; margin-top:20px; box-shadow:0 2px 8px rgba(0,0,0,0.1);}
-  th, td { padding:8px; border:1px solid #ccc; text-align:center; }
-  th { background:#007bff; color:#fff; }
+    h2 { margin-bottom: 20px; color: #333; }
 
-  button { padding:4px 8px; margin:2px; cursor:pointer; border:none; border-radius:4px; }
-  .approve { background:#28a745; color:#fff; }
-  .reject { background:#dc3545; color:#fff; }
-  input.reject-reason { width: 120px; padding: 3px; }
-</style>
+    a { text-decoration: none; color: #007bff; font-weight: bold; }
+
+    .top-links { margin-bottom: 20px; }
+    .top-links a { margin-right: 15px; }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      background: #fff;
+      margin-top: 20px;
+      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      border-radius: 8px;
+      overflow: hidden;
+    }
+
+    th, td {
+      padding: 12px;
+      text-align: center;
+      border-bottom: 1px solid #eee;
+    }
+
+    th { background: #007bff; color: #fff; }
+
+    button {
+      padding: 4px 8px;
+      margin: 2px;
+      cursor: pointer;
+      border: none;
+      border-radius: 4px;
+    }
+
+    .approve { background: #28a745; color: #fff; }
+    .reject { background: #dc3545; color: #fff; }
+    input.reject-reason { width: 120px; padding: 3px; }
+
+    footer { margin-top: 40px; color: #666; text-align: center; }
+  </style>
 </head>
 <body>
+
+<div class="top-links">
+  <a href="/admin/dashboard">Dashboard</a>
+  <a href="/logout">Logout</a>
+</div>
 
 <h2>All Leave Requests</h2>
 
@@ -41,8 +80,8 @@
         <tr>
           <td><%= l.id %></td>
           <td><%= l.employee_name %></td>
-          <td><%= new Date(l.start_date).toISOString().split('T')[0] %></td>
-          <td><%= new Date(l.end_date).toISOString().split('T')[0] %></td>
+          <td><%= new Date(l.start_date).toLocaleDateString() %></td>
+          <td><%= new Date(l.end_date).toLocaleDateString() %></td>
           <td><%= l.reason %></td>
           <td><%= l.status %></td>
           <td><%= l.rejection_reason || '-' %></td>
@@ -66,19 +105,16 @@
   </tbody>
 </table>
 
-<br>
-<a href="/admin/dashboard">⬅ Back to Dashboard</a>
-<a href="/logout">Logout</a>
-
-<!-- Popup Alerts -->
+<!-- Flash Messages -->
 <script>
   <% if (success_msg && success_msg.length) { %>
-    alert("<%= success_msg %>");
+    alert("<%= success_msg.join('\\n') %>");
   <% } %>
   <% if (err_msg && err_msg.length) { %>
-    alert("<%= err_msg %>");
+    alert("<%= err_msg.join('\\n') %>");
   <% } %>
 </script>
 
+<footer>© 2025 OfficeCore</footer>
 </body>
 </html>

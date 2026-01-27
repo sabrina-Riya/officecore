@@ -1,19 +1,17 @@
-const { Pool } = require("pg");
 require("dotenv").config();
+const { Pool } = require("pg");
 
-const isProd = process.env.NODE_ENV === "production";
+const connectionString = process.env.DATABASE_URL;
 
-const pool = isProd
-  ? new Pool({
-      connectionString: process.env.DATABASE_URL,
-      ssl: { rejectUnauthorized: false } // ✅ required for Render
-    })
-  : new Pool({
-      host: "localhost",
-      user: "postgres",
-      password: "123",
-      database: "officecore",
-      port: 5432
-    });
+// Enable SSL for Render (remote DB) only
+const useSSL = connectionString && !connectionString.includes("localhost");
+
+const pool = new Pool({
+  connectionString,
+  ssl: useSSL ? { rejectUnauthorized: false } : false,
+});
+
+pool.on("connect", () => console.log("Postgres connected"));
+pool.on("error", (err) => console.error("Postgres pool error:", err));
 
 module.exports = { pool };

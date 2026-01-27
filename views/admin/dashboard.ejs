@@ -3,182 +3,92 @@
 <head>
   <meta charset="UTF-8">
   <title>Admin Dashboard</title>
-
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6f8;
-      margin: 0;
-      padding: 20px;
-    }
-
-    h2 {
-      margin-bottom: 20px;
-      color: #333;
-    }
-
-    a {
-      text-decoration: none;
-      color: inherit;
-    }
-
-    .top-links {
-      margin-bottom: 20px;
-    }
-
-    .top-links a {
-      margin-right: 15px;
-      color: #007bff;
-      font-weight: bold;
-    }
-
-    .cards {
-      display: grid;
-      grid-template-columns: repeat(5, 1fr);
-      gap: 20px;
-      margin-bottom: 40px;
-    }
-
-    .card {
-      background: #ffffff;
-      padding: 20px;
-      border-radius: 8px;
-      text-align: center;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      transition: transform 0.2s ease, box-shadow 0.2s ease;
-    }
-
-    .card:hover {
-      transform: translateY(-4px);
-      box-shadow: 0 6px 14px rgba(0,0,0,0.15);
-    }
-
-    .card h3 {
-      margin-bottom: 10px;
-      font-size: 15px;
-      color: #555;
-    }
-
-    .card p {
-      font-size: 26px;
-      font-weight: bold;
-      color: #111;
-      margin: 0;
-    }
-
-    table {
-      width: 100%;
-      border-collapse: collapse;
-      background: #ffffff;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-
-    th, td {
-      padding: 12px;
-      border-bottom: 1px solid #eee;
-      text-align: left;
-    }
-
-    th {
-      background: #fafafa;
-      font-weight: bold;
-    }
-
-    .view-all {
-      margin-top: 15px;
-      text-align: right;
-    }
-
-    .view-all a {
-      color: #007bff;
-      font-weight: bold;
-    }
+    body { font-family: Arial, sans-serif; background:#f4f6f8; margin:0; padding:20px; }
+    h2 { margin-bottom:20px; color:#333; }
+    a { text-decoration:none; color:inherit; }
+    .top-links { margin-bottom:20px; }
+    .top-links a { margin-right:15px; color:#007bff; font-weight:bold; }
+    .cards { display:grid; grid-template-columns:repeat(auto-fit, minmax(140px,1fr)); gap:20px; margin-bottom:40px; }
+    .card { background:#fff; padding:20px; border-radius:8px; text-align:center; box-shadow:0 2px 6px rgba(0,0,0,0.1); transition: transform 0.2s ease, box-shadow 0.2s ease; }
+    .card:hover { transform:translateY(-4px); box-shadow:0 6px 14px rgba(0,0,0,0.15); }
+    .card h3 { margin-bottom:10px; font-size:15px; color:#555; }
+    .card p { font-size:26px; font-weight:bold; color:#111; margin:0; }
+    table { width:100%; border-collapse:collapse; background:#fff; border-radius:8px; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
+    th, td { padding:12px; border-bottom:1px solid #eee; text-align:left; }
+    th { background:#fafafa; font-weight:bold; }
+    .view-all { margin-top:15px; text-align:right; }
+    .view-all a { color:#007bff; font-weight:bold; }
+    footer { margin-top:40px; color:#666; text-align:center; }
   </style>
 </head>
 <body>
 
-  <!-- Top navigation -->
-  <div class="top-links">
-    <a href="/logout">Logout</a>
-    <a href="/admin/users">Users</a>
-    <a href="/admin/leave">Manage Leaves</a>
-    <a href="/admin/audit_logs">Audit Logs</a>
-  </div>
+<div class="top-links">
+  <a href="/logout">Logout</a>
+  <a href="/admin/users">Users</a>
+  <a href="/admin/leave">Manage Leaves</a>
+  <a href="/admin/audit_logs">Audit Logs</a>
+</div>
 
-  <!-- Welcome -->
-  <h2>Welcome, <%= adminame %></h2>
+<h2>Welcome, <%= adminName %></h2>
 
-  <!-- ===== STAT CARDS ===== -->
-  <div class="cards">
+<div class="cards">
+  <a href="/admin/users" class="card">
+    <h3>Total Employees</h3>
+    <p><%= totalUsers %></p>
+  </a>
+  <a href="/admin/leave?status=pending" class="card">
+    <h3>Pending Leave Requests</h3>
+    <p><%= leaveUser %></p>
+  </a>
+  <a href="/admin/leave?status=approved" class="card">
+    <h3>Approved Leaves</h3>
+    <p><%= approvedUser %></p>
+  </a>
+  <a href="/admin/leave?status=rejected" class="card">
+    <h3>Rejected Leaves</h3>
+    <p><%= rejectedUser %></p>
+  </a>
+  <a href="/admin/audit_logs" class="card">
+    <h3>Audit Logs</h3>
+    <p>View</p>
+  </a>
+</div>
 
-    <a href="/admin/users" class="card">
-      <h3>Total Employees</h3>
-      <p><%= totaluser %></p>
-    </a>
+<h3>Recent Pending Leave Requests</h3>
 
-    <a href="/admin/leave?status=pending" class="card">
-      <h3>Pending Leave Requests</h3>
-      <p><%= Leaveuser %></p>
-    </a>
-
-    <a href="/admin/leave?status=approved" class="card">
-      <h3>Approved Leaves</h3>
-      <p><%= approveuser %></p>
-    </a>
-
-    <a href="/admin/leave?status=rejected" class="card">
-      <h3>Rejected Leaves</h3>
-      <p><%= rejectuser %></p>
-    </a>
-
-    <a href="/admin/audit_logs" class="card">
-      <h3>Audit Logs</h3>
-      <p>View</p>
-    </a>
-
-  </div>
-
-  <!-- ===== RECENT REQUESTS ===== -->
-  <h3>Recent Pending Leave Requests</h3>
-
-  <% if (pendingRequest.length === 0) { %>
-    <p>No pending leave requests.</p>
-  <% } else { %>
-
-    <table>
-      <thead>
+<% if (!pendingRequest || pendingRequest.length === 0) { %>
+  <p>No pending leave requests.</p>
+<% } else { %>
+  <table>
+    <thead>
+      <tr>
+        <th>Employee</th>
+        <th>Start Date</th>
+        <th>End Date</th>
+        <th>Reason</th>
+        <th>Requested At</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% pendingRequest.forEach(req => { %>
         <tr>
-          <th>Employee</th>
-          <th>Start Date</th>
-          <th>End Date</th>
-          <th>Reason</th>
-          <th>Requested At</th>
+          <td><%= req.employee_name %></td>
+          <td><%= new Date(req.start_date).toLocaleDateString() %></td>
+          <td><%= new Date(req.end_date).toLocaleDateString() %></td>
+          <td><%= req.reason %></td>
+          <td><%= new Date(req.created_at).toLocaleString() %></td>
         </tr>
-      </thead>
-      <tbody>
-        <% pendingRequest.forEach(req => { %>
-          <tr>
-            <td><%= req.employee_name %></td>
-            <td><%= new Date(req.start_date).toDateString() %></td>
-            <td><%= new Date(req.end_date).toDateString() %></td>
-            <td><%= req.reason %></td>
-            <td><%= new Date(req.created_at).toLocaleString() %></td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
+      <% }) %>
+    </tbody>
+  </table>
 
-    <div class="view-all">
-      <a href="/admin/leave?status=pending">View all pending requests →</a>
-    </div>
+  <div class="view-all">
+    <a href="/admin/leave?status=pending">View all pending requests →</a>
+  </div>
+<% } %>
 
-  <% } %>
-
-  <footer style="margin-top:40px;color:#666;">
-    © 2025 OfficeCore
-  </footer>
-
+<footer>© 2025 OfficeCore</footer>
 </body>
 </html>
