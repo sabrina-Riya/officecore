@@ -4,50 +4,60 @@
   <meta charset="UTF-8">
   <title>Leave History</title>
   <style>
-    body { font-family: Arial; margin: 30px; background-color: #f9f9f9; }
-    h2, h3 { color: #333; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { padding: 10px; border: 1px solid #ccc; text-align: left; }
-    th { background-color: #eee; }
-    a { text-decoration: none; color: #007bff; }
-    .success { color: green; }
-    .error { color: red; }
+    body { font-family: Arial; background:#f4f6f8; padding:20px; }
+    table { width:100%; border-collapse: collapse; margin-top:20px; }
+    th, td { padding:10px; border:1px solid #ddd; text-align:center; }
+    th { background:#333; color:#fff; }
+    .flash { padding:10px; border-radius:5px; margin-bottom:15px; }
+    .success { background:#d4edda; color:#155724; }
+    .error { background:#f8d7da; color:#721c24; }
   </style>
 </head>
 <body>
-  <h2>Leave History</h2>
-  <h3>Leave: <%= leave.reason %> (Status: <%= leave.status %>)</h3>
-  <p>From: <%= new Date(leave.start_date).toLocaleDateString() %> To: <%= new Date(leave.end_date).toLocaleDateString() %></p>
-  
-  <h3>Audit Log</h3>
-  <% if (logs.length === 0) { %>
-    <p>No history found for this leave.</p>
-  <% } else { %>
-    <table>
-      <thead>
-        <tr>
-          <th>Action</th>
-          <th>Old Status</th>
-          <th>New Status</th>
-          <th>Message</th>
-          <th>Date</th>
-        </tr>
-      </thead>
-      <tbody>
-        <% logs.forEach(log => { %>
-          <tr>
-            <td><%= log.action %></td>
-            <td><%= log.old_status || '-' %></td>
-            <td><%= log.new_status || '-' %></td>
-            <td><%= log.message %></td>
-            <td><%= new Date(log.created_at).toLocaleString() %></td>
-          </tr>
-        <% }) %>
-      </tbody>
-    </table>
+  <h2>Leave History - ID: <%= leave.id %></h2>
+
+  <% if (success_msg && success_msg.length) { %>
+    <div class="flash success">
+      <% success_msg.forEach(msg => { %><p><%= msg %></p><% }) %>
+    </div>
+  <% } %>
+  <% if (err_msg && err_msg.length) { %>
+    <div class="flash error">
+      <% err_msg.forEach(msg => { %><p><%= msg %></p><% }) %>
+    </div>
   <% } %>
 
-  <br>
-  <a href="/employee/leave-list">Back to Leave List</a>
+  <p><strong>Reason:</strong> <%= leave.reason %></p>
+  <p><strong>Status:</strong> <%= leave.status %></p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Action</th>
+        <th>Message</th>
+        <th>Old Status</th>
+        <th>New Status</th>
+        <th>Performed By</th>
+        <th>Date</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (logs.length === 0) { %>
+        <tr><td colspan="7">No history available.</td></tr>
+      <% } %>
+      <% logs.forEach(log => { %>
+        <tr>
+          <td><%= log.id %></td>
+          <td><%= log.action %></td>
+          <td><%= log.message %></td>
+          <td><%= log.old_status || '-' %></td>
+          <td><%= log.new_status || '-' %></td>
+          <td><%= log.performed_by_name || '-' %></td>
+          <td><%= new Date(log.created_at).toISOString().slice(0,19).replace("T"," ") %></td>
+        </tr>
+      <% }) %>
+    </tbody>
+  </table>
 </body>
 </html>

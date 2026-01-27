@@ -4,7 +4,8 @@
   <meta charset="UTF-8">
   <title>Audit Logs</title>
   <style>
-    table { width:100%; border-collapse: collapse; }
+    body { font-family: Arial; background:#f4f6f8; padding:20px; }
+    table { width:100%; border-collapse: collapse; margin-top:20px; }
     th, td { padding:10px; border:1px solid #ddd; }
     th { background:#333; color:#fff; }
   </style>
@@ -19,21 +20,25 @@
         <th>Performed By</th>
         <th>Target Table</th>
         <th>Target ID</th>
+        <th>Old Status</th>
+        <th>New Status</th>
         <th>Message</th>
         <th>Created At</th>
       </tr>
     </thead>
     <tbody>
       <% logs.forEach(log => { %>
-        <tr>
-          <td><%= log.id %></td>
-          <td><%= log.action %></td>
-          <td><%= log.performed_by_name || "-" %></td>
-          <td><%= log.target_table %></td>
-          <td><%= log.target_id %></td>
-          <td><%= log.message || "-" %></td>
-          <td><%= log.created_at ? new Date(log.created_at).toISOString().slice(0,10) : "-" %></td>
-        </tr>
+      <tr>
+        <td><%= log.id %></td>
+        <td><%= log.action %></td>
+        <td><%= log.performed_by_name || "-" %></td>
+        <td><%= log.target_table || "-" %></td>
+        <td><%= log.target_id || "-" %></td>
+        <td><%= log.old_status || "-" %></td>
+        <td><%= log.new_status || "-" %></td>
+        <td><%= log.message || "-" %></td>
+        <td><%= log.created_at ? new Date(log.created_at).toISOString().slice(0,10) : "-" %></td>
+      </tr>
       <% }) %>
     </tbody>
   </table>

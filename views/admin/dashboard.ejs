@@ -12,31 +12,23 @@
   </style>
 </head>
 <body>
-  <% 
-    const safeAdminName = typeof adminName !== 'undefined' ? adminName : "Admin";
-    const safeTotalUsers = typeof totalUsers !== 'undefined' ? totalUsers : 0;
-    const safePendingLeave = typeof pendingLeave !== 'undefined' ? pendingLeave : 0;
-    const safeApprovedLeave = typeof approvedLeave !== 'undefined' ? approvedLeave : 0;
-    const safeRejectedLeave = typeof rejectedLeave !== 'undefined' ? rejectedLeave : 0;
-  %>
-
-  <h2>Welcome, <%= safeAdminName %></h2>
+  <h2>Welcome, <%= adminName %></h2>
   <div class="cards">
     <a href="/admin/users" class="card">
       <h3>Total Employees</h3>
-      <p><%= safeTotalUsers %></p>
+      <p><%= totalUsers %></p>
     </a>
     <a href="/admin/leave?status=pending" class="card">
-      <h3>Pending Leave Requests</h3>
-      <p><%= safePendingLeave %></p>
+      <h3>Pending Leaves</h3>
+      <p><%= pendingLeave %></p>
     </a>
     <a href="/admin/leave?status=approved" class="card">
       <h3>Approved Leaves</h3>
-      <p><%= safeApprovedLeave %></p>
+      <p><%= approvedLeave %></p>
     </a>
     <a href="/admin/leave?status=rejected" class="card">
       <h3>Rejected Leaves</h3>
-      <p><%= safeRejectedLeave %></p>
+      <p><%= rejectedLeave %></p>
     </a>
   </div>
 </body>

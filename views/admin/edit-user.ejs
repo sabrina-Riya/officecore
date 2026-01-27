@@ -8,12 +8,24 @@
     form { max-width: 400px; margin-top: 20px; }
     input, select { width: 100%; padding: 8px; margin: 8px 0; }
     button { padding: 10px 15px; }
+    .success { color: green; }
+    .error { color: red; }
   </style>
 </head>
 <body>
   <h2>Edit User - <%= user.name %></h2>
 
-  <% include ./partials/messages %>
+  <!-- Messages Partial -->
+  <% if (success_msg && success_msg.length) { %>
+    <div class="success"><%= success_msg %></div>
+  <% } %>
+  <% if (err_msg && err_msg.length) { %>
+    <div class="error">
+      <% err_msg.forEach(msg => { %>
+        <p><%= msg %></p>
+      <% }) %>
+    </div>
+  <% } %>
 
   <form method="POST" action="/admin/users/edit/<%= user.id %>">
     <label>Name:</label>

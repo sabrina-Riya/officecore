@@ -15,15 +15,17 @@ function ensureAuthenticated(req, res, next) {
 // middleware/auth.js
 function permitRoles(...roles) {
   return (req, res, next) => {
-    const userRole = req.user?.role?.toLowerCase();
-    const allowedRoles = roles.map(r => r.toLowerCase());
-    if (!userRole || !allowedRoles.includes(userRole)) {
-      return res.status(403).send("Forbidden");
+    if (!req.isAuthenticated()) {
+      req.flash("error", "Please login first");
+      return res.redirect("/login");
+    }
+    if (!roles.includes(req.user.role.toLowerCase())) {
+      req.flash("error", "You do not have permission to access this page");
+      return res.redirect("/login");
     }
     next();
   };
 }
-
 
 module.exports = {
   redirectAuthenticated,

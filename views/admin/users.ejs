@@ -2,20 +2,20 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Admin - Users</title>
+  <title>Users Management</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background: #f4f6f8; }
-    table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-    th, td { padding: 10px; border: 1px solid #ddd; text-align: center; }
-    th { background: #333; color: #fff; }
-    button { padding: 5px 10px; margin: 2px; }
+    body { font-family: Arial; background:#f4f6f8; padding:20px; }
+    table { width:100%; border-collapse: collapse; }
+    th, td { padding:10px; border:1px solid #ddd; }
+    th { background:#333; color:#fff; }
+    .btn { padding:5px 10px; background:#007bff; color:#fff; border:none; border-radius:4px; cursor:pointer; text-decoration:none; }
+    .btn-danger { background:#dc3545; }
   </style>
 </head>
 <body>
-  <h2>All Users</h2>
-
-  <% include ./partials/messages %>
-
+  <h2>Users Management</h2>
+  <% if(success_msg.length) { %><p style="color:green"><%= success_msg %></p><% } %>
+  <% if(err_msg.length) { %><p style="color:red"><%= err_msg %></p><% } %>
   <table>
     <thead>
       <tr>
@@ -29,33 +29,22 @@
     </thead>
     <tbody>
       <% users.forEach(user => { %>
-        <tr>
-          <td><%= user.id %></td>
-          <td><%= user.name %></td>
-          <td><%= user.email %></td>
-          <td><%= user.role %></td>
-          <td><%= user.is_active ? "Active" : "Inactive" %></td>
-          <td>
-            <!-- Activate/Deactivate -->
-            <form method="POST" action="/admin/users/<%= user.id %>" style="display:inline;">
-              <button type="submit">
-                <%= user.is_active ? "Deactivate" : "Activate" %>
-              </button>
-            </form>
-
-            <!-- Change Role -->
-            <form method="POST" action="/admin/users/role/<%= user.id %>" style="display:inline;">
-              <button type="submit">
-                Change Role
-              </button>
-            </form>
-
-            <!-- Edit User -->
-            <a href="/admin/users/edit/<%= user.id %>">
-              <button>Edit</button>
-            </a>
-          </td>
-        </tr>
+      <tr>
+        <td><%= user.id %></td>
+        <td><%= user.name %></td>
+        <td><%= user.email %></td>
+        <td><%= user.role %></td>
+        <td><%= user.is_active ? "Active" : "Inactive" %></td>
+        <td>
+          <form action="/admin/users/<%= user.id %>" method="POST" style="display:inline;">
+            <button class="btn" type="submit"><%= user.is_active ? "Deactivate" : "Activate" %></button>
+          </form>
+          <a href="/admin/users/edit/<%= user.id %>" class="btn">Edit</a>
+          <form action="/admin/users/role/<%= user.id %>" method="POST" style="display:inline;">
+            <button class="btn btn-danger" type="submit">Change Role</button>
+          </form>
+        </td>
+      </tr>
       <% }) %>
     </tbody>
   </table>

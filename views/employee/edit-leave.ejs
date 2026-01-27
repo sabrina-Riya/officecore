@@ -3,134 +3,38 @@
 <head>
   <meta charset="UTF-8">
   <title>Edit Leave</title>
-
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6f8;
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      height: 100vh;
-      margin: 0;
-    }
-
-    .card {
-      background: #fff;
-      padding: 30px;
-      width: 420px;
-      border-radius: 10px;
-      box-shadow: 0 8px 20px rgba(0,0,0,0.1);
-    }
-
-    h2 {
-      text-align: center;
-      margin-bottom: 25px;
-      color: #333;
-    }
-
-    label {
-      font-weight: bold;
-      display: block;
-      margin-bottom: 6px;
-      color: #555;
-    }
-
-    input[type="date"],
-    textarea {
-      width: 100%;
-      padding: 10px;
-      border-radius: 6px;
-      border: 1px solid #ccc;
-      margin-bottom: 18px;
-      font-size: 14px;
-    }
-
-    textarea {
-      resize: none;
-      height: 90px;
-    }
-
-    .error {
-      background: #ffe6e6;
-      color: #b30000;
-      padding: 10px;
-      border-radius: 5px;
-      margin-bottom: 10px;
-      font-size: 14px;
-    }
-
-    .success {
-      background: #e6ffea;
-      color: #007a1c;
-      padding: 10px;
-      border-radius: 5px;
-      margin-bottom: 10px;
-      font-size: 14px;
-    }
-
-    button {
-      width: 100%;
-      background: #007bff;
-      color: #fff;
-      border: none;
-      padding: 12px;
-      font-size: 16px;
-      border-radius: 6px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #0056b3;
-    }
-
-    .back {
-      display: block;
-      text-align: center;
-      margin-top: 18px;
-      text-decoration: none;
-      color: #007bff;
-      font-size: 14px;
-    }
-
-    .back:hover {
-      text-decoration: underline;
-    }
+    body { font-family: Arial; padding:20px; background:#f4f6f8; }
+    form { max-width:400px; margin-top:20px; }
+    input, textarea { width:100%; padding:8px; margin:8px 0; }
+    button { padding:10px 15px; }
+    .flash { padding:10px; border-radius:5px; margin-bottom:15px; }
+    .success { background:#d4edda; color:#155724; }
+    .error { background:#f8d7da; color:#721c24; }
   </style>
 </head>
-
 <body>
-  <div class="card">
-    <h2>Edit Leave Request</h2>
+  <h2>Edit Leave - ID: <%= leave.id %></h2>
 
-    <% if (err_msg.length > 0) { %>
-      <% err_msg.forEach(e => { %>
-        <div class="error"><%= e %></div>
-      <% }) %>
-    <% } %>
+  <% if (success_msg && success_msg.length) { %>
+    <div class="flash success">
+      <% success_msg.forEach(msg => { %><p><%= msg %></p><% }) %>
+    </div>
+  <% } %>
+  <% if (err_msg && err_msg.length) { %>
+    <div class="flash error">
+      <% err_msg.forEach(msg => { %><p><%= msg %></p><% }) %>
+    </div>
+  <% } %>
 
-    <% if (success_msg.length > 0) { %>
-      <% success_msg.forEach(e => { %>
-        <div class="success"><%= e %></div>
-      <% }) %>
-    <% } %>
-
-    <form action="/employee/leave/edit/<%= leave.id %>" method="POST">
-      <label>Start Date</label>
-      <input type="date" name="sdate"
-        value="<%= leave.start_date.toISOString().split('T')[0] %>" required>
-
-      <label>End Date</label>
-      <input type="date" name="edate"
-        value="<%= leave.end_date.toISOString().split('T')[0] %>" required>
-
-      <label>Reason</label>
-      <textarea name="reason" required><%= leave.reason %></textarea>
-
-      <button type="submit">Update Leave</button>
-    </form>
-
-    <a class="back" href="/employee/leave-list">⬅ Back to Leave List</a>
-  </div>
+  <form method="POST" action="/employee/leave/edit/<%= leave.id %>">
+    <label>Start Date:</label>
+    <input type="date" name="sdate" value="<%= leave.start_date ? new Date(leave.start_date).toISOString().slice(0,10) : '' %>" required>
+    <label>End Date:</label>
+    <input type="date" name="edate" value="<%= leave.end_date ? new Date(leave.end_date).toISOString().slice(0,10) : '' %>" required>
+    <label>Reason:</label>
+    <textarea name="reason" rows="4" required><%= leave.reason %></textarea>
+    <button type="submit">Update Leave</button>
+  </form>
 </body>
 </html>
