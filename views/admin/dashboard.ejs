@@ -69,6 +69,7 @@
         <th>End Date</th>
         <th>Reason</th>
         <th>Requested At</th>
+        <th>Actions</th>
       </tr>
     </thead>
     <tbody>
@@ -79,6 +80,9 @@
           <td><%= new Date(req.end_date).toLocaleDateString() %></td>
           <td><%= req.reason %></td>
           <td><%= new Date(req.created_at).toLocaleString() %></td>
+          <td>
+            <a href="/admin/leave/<%= req.id %>">View Details</a>
+          </td>
         </tr>
       <% }) %>
     </tbody>
@@ -86,6 +90,19 @@
 
   <div class="view-all">
     <a href="/admin/leave?status=pending">View all pending requests →</a>
+  </div>
+<% } %>
+
+<!-- Flash Messages -->
+<% if (success_msg && success_msg.length > 0) { %>
+  <div style="background:#d4edda; color:#155724; padding:10px; margin:10px 0; border-radius:4px;">
+    <%= success_msg %>
+  </div>
+<% } %>
+
+<% if (err_msg && err_msg.length > 0) { %>
+  <div style="background:#f8d7da; color:#721c24; padding:10px; margin:10px 0; border-radius:4px;">
+    <%= err_msg %>
   </div>
 <% } %>
 
