@@ -16,7 +16,6 @@ const flash = require("express-flash");
 const initPass = require("./passport/passportconfig");
 const { redirectAuthenticated, ensureAuthenticated, permitRoles } = require("./middleware/auth");
 const logger = require("./logger");
-console.log("sendWebhook type:", typeof sendWebhook);
 
 // ---------- DB ----------
 const pool = new Pool({
@@ -78,7 +77,6 @@ app.get("/demo/:role", async (req, res) => {
 
   // ✅ Send webhook for demo login usage
   try {
-    await sendWebhook("DEMO_LOGIN_USED", { role, ip: req.ip });
     console.log(`Webhook sent for demo login as ${role}`);
   } catch (err) {
     console.error("Failed to send webhook:", err);
@@ -103,7 +101,6 @@ app.post("/login", passport.authenticate("local", {
   failureFlash: true
 }), async (req, res) => {
   // Optional: webhook on successful login
-  await sendWebhook("USER_LOGGED_IN", { email: req.user.email, role: req.user.role });
 });
 
 
@@ -144,7 +141,6 @@ app.post("/register", async (req, res) => {
     );
 
     // ✅ Send webhook after successful registration
-    await sendWebhook("USER_REGISTERED", { name, email, role: "EMPLOYEE" });
 
     req.flash("success_msg", "You are successfully registered");
     res.redirect("/login");
