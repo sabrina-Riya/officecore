@@ -12,18 +12,18 @@ function ensureAuthenticated(req, res, next) {
   return res.redirect("/login");
 }
 
+// middleware/auth.js
 function permitRoles(...roles) {
   return (req, res, next) => {
-    // convert both role from DB and allowed roles to lowercase
     const userRole = req.user?.role?.toLowerCase();
     const allowedRoles = roles.map(r => r.toLowerCase());
-    
     if (!userRole || !allowedRoles.includes(userRole)) {
       return res.status(403).send("Forbidden");
     }
     next();
   };
 }
+
 
 module.exports = {
   redirectAuthenticated,
