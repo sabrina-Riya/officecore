@@ -13,26 +13,35 @@
   </style>
 </head>
 <body>
-  <h2>Welcome, <%= adminName || "Admin" %></h2>
-  <p>Total Users: <%= totalUsers || 0 %></p>
+  <% 
+    // Safe defaults
+    const safeAdminName = typeof adminName !== 'undefined' ? adminName : "Admin";
+    const safeTotalUsers = typeof totalUsers !== 'undefined' ? totalUsers : 0;
+    const safePendingLeave = typeof pendingLeave !== 'undefined' ? pendingLeave : 0;
+    const safeApprovedLeave = typeof approvedLeave !== 'undefined' ? approvedLeave : 0;
+    const safeRejectedLeave = typeof rejectedLeave !== 'undefined' ? rejectedLeave : 0;
+    const safeRecentPendingLeave = Array.isArray(recentPendingLeave) ? recentPendingLeave : [];
+  %>
 
+  <h2>Welcome, <%= safeAdminName %></h2>
+  <p>Total Users: <%= safeTotalUsers %></p>
 
   <div class="cards">
     <a href="/admin/users" class="card">
       <h3>Total Employees</h3>
-      <p><%= totalUsers || 0 %></p>
+      <p><%= safeTotalUsers %></p>
     </a>
     <a href="/admin/leave?status=pending" class="card">
       <h3>Pending Leave Requests</h3>
-      <p><%= pendingLeave || 0 %></p>
+      <p><%= safePendingLeave %></p>
     </a>
     <a href="/admin/leave?status=approved" class="card">
       <h3>Approved Leaves</h3>
-      <p><%= approvedLeave || 0 %></p>
+      <p><%= safeApprovedLeave %></p>
     </a>
     <a href="/admin/leave?status=rejected" class="card">
       <h3>Rejected Leaves</h3>
-      <p><%= rejectedLeave || 0 %></p>
+      <p><%= safeRejectedLeave %></p>
     </a>
   </div>
 
@@ -49,15 +58,15 @@
       </tr>
     </thead>
     <tbody>
-      <% if (recentPendingLeave.length > 0) { %>
-        <% recentPendingLeave.forEach(leave => { %>
+      <% if (safeRecentPendingLeave.length > 0) { %>
+        <% safeRecentPendingLeave.forEach(leave => { %>
           <tr>
-            <td><%= leave.id %></td>
-            <td><%= leave.employee_name %></td>
-            <td><%= leave.start_date.toISOString().slice(0,10) %></td>
-            <td><%= leave.end_date.toISOString().slice(0,10) %></td>
-            <td><%= leave.reason %></td>
-            <td><%= leave.created_at.toISOString().slice(0,10) %></td>
+            <td><%= leave.id || "-" %></td>
+            <td><%= leave.employee_name || "-" %></td>
+            <td><%= leave.start_date ? leave.start_date.toISOString().slice(0,10) : "-" %></td>
+            <td><%= leave.end_date ? leave.end_date.toISOString().slice(0,10) : "-" %></td>
+            <td><%= leave.reason || "-" %></td>
+            <td><%= leave.created_at ? leave.created_at.toISOString().slice(0,10) : "-" %></td>
           </tr>
         <% }) %>
       <% } else { %>
