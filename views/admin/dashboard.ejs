@@ -31,7 +31,7 @@
   <a href="/admin/audit_logs">Audit Logs</a>
 </div>
 
-<h2>Welcome, <%= adminName %></h2>
+<h2>Welcome, <%= typeof adminName !== 'undefined' ? adminName : 'Admin' %></h2>
 
 <div class="cards">
   <a href="/admin/users" class="card">
@@ -40,15 +40,15 @@
   </a>
   <a href="/admin/leave?status=pending" class="card">
     <h3>Pending Leave Requests</h3>
-    <p><%= leaveUser %></p>
+    <p><%= pendingLeave %></p>
   </a>
   <a href="/admin/leave?status=approved" class="card">
     <h3>Approved Leaves</h3>
-    <p><%= approvedUser %></p>
+    <p><%= approvedLeave %></p>
   </a>
   <a href="/admin/leave?status=rejected" class="card">
     <h3>Rejected Leaves</h3>
-    <p><%= rejectedUser %></p>
+    <p><%= rejectedLeave %></p>
   </a>
   <a href="/admin/audit_logs" class="card">
     <h3>Audit Logs</h3>
@@ -58,7 +58,7 @@
 
 <h3>Recent Pending Leave Requests</h3>
 
-<% if (!pendingRequest || pendingRequest.length === 0) { %>
+<% if (!recentPendingLeave || recentPendingLeave.length === 0) { %>
   <p>No pending leave requests.</p>
 <% } else { %>
   <table>
@@ -73,7 +73,7 @@
       </tr>
     </thead>
     <tbody>
-      <% pendingRequest.forEach(req => { %>
+      <% recentPendingLeave.forEach(req => { %>
         <tr>
           <td><%= req.employee_name %></td>
           <td><%= new Date(req.start_date).toLocaleDateString() %></td>

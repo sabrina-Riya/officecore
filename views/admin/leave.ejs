@@ -80,10 +80,10 @@
         <tr>
           <td><%= l.id %></td>
           <td><%= l.employee_name %></td>
-          <td><%= new Date(l.start_date).toLocaleDateString() %></td>
-          <td><%= new Date(l.end_date).toLocaleDateString() %></td>
-          <td><%= l.reason %></td>
-          <td><%= l.status %></td>
+          <td><%= l.start_date ? new Date(l.start_date).toLocaleDateString() : '-' %></td>
+          <td><%= l.end_date ? new Date(l.end_date).toLocaleDateString() : '-' %></td>
+          <td><%= l.reason || '-' %></td>
+          <td><%= l.status || '-' %></td>
           <td><%= l.rejection_reason || '-' %></td>
           <td><%= l.actioned_by || '-' %></td>
           <td>
@@ -108,10 +108,10 @@
 <!-- Flash Messages -->
 <script>
   <% if (success_msg && success_msg.length) { %>
-    alert("<%= success_msg.join('\\n') %>");
+    alert("<%= Array.isArray(success_msg) ? success_msg.join('\\n') : success_msg %>");
   <% } %>
   <% if (err_msg && err_msg.length) { %>
-    alert("<%= err_msg.join('\\n') %>");
+    alert("<%= Array.isArray(err_msg) ? err_msg.join('\\n') : err_msg %>");
   <% } %>
 </script>
 

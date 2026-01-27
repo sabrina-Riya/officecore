@@ -21,7 +21,7 @@
 <div class="filter">
   <form method="GET">
     <select name="action">
-      <option value="all">All Actions</option>
+      <option value="all" <%= (!filterAction || filterAction==="all")?"selected":"" %>>All Actions</option>
       <option value="LEAVE_APPROVED" <%= filterAction==="LEAVE_APPROVED"?"selected":"" %>>Leave Approved</option>
       <option value="LEAVE_REJECTED" <%= filterAction==="LEAVE_REJECTED"?"selected":"" %>>Leave Rejected</option>
       <option value="USER_STATUS_CHANGED" <%= filterAction==="USER_STATUS_CHANGED"?"selected":"" %>>User Status Changed</option>
@@ -43,26 +43,32 @@
     </tr>
   </thead>
   <tbody>
-    <% logs.forEach(log => { %>
-      <tr>
-        <td><%= new Date(log.created_at).toLocaleString() %></td>
-        <td><%= log.action %></td>
-        <td><%= log.performed_by_name || "System" %></td>
-        <td><%= log.target_table %> (#<%= log.target_id %>)</td>
-        <td><%= log.old_status || "-" %></td>
-        <td><%= log.new_status || "-" %></td>
-        <td><%= log.message || "-" %></td>
-      </tr>
-    <% }) %>
+    <% if (logs && logs.length > 0) { %>
+      <% logs.forEach(log => { %>
+        <tr>
+          <td><%= log.created_at ? new Date(log.created_at).toLocaleString() : "-" %></td>
+          <td><%= log.action || "-" %></td>
+          <td><%= log.performed_by_name || "System" %></td>
+          <td><%= log.target_table ? log.target_table : "-" %> (<%= log.target_id || "-" %>)</td>
+          <td><%= log.old_status || "-" %></td>
+          <td><%= log.new_status || "-" %></td>
+          <td><%= log.message || "-" %></td>
+        </tr>
+      <% }) %>
+    <% } else { %>
+      <tr><td colspan="7">No audit logs found</td></tr>
+    <% } %>
   </tbody>
 </table>
 
 <div class="pagination">
-  <% for(let i=1;i<=totalPages;i++){ %>
-    <% if(i===currentPage){ %>
-      <strong><%= i %></strong>
-    <% } else { %>
-      <a href="?page=<%= i %>&action=<%= filterAction %>"><%= i %></a>
+  <% if (totalPages && totalPages > 0) { %>
+    <% for(let i=1;i<=totalPages;i++){ %>
+      <% if(i===currentPage){ %>
+        <strong><%= i %></strong>
+      <% } else { %>
+        <a href="?page=<%= i %>&action=<%= filterAction || 'all' %>"><%= i %></a>
+      <% } %>
     <% } %>
   <% } %>
 </div>

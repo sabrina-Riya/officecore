@@ -20,7 +20,7 @@
   <h2>Edit User</h2>
 
   <% if (success_msg && success_msg.length > 0) { %>
-    <div class="flash-success"><%= success_msg %></div>
+    <div class="flash-success"><%= Array.isArray(success_msg) ? success_msg.join('<br>') : success_msg %></div>
   <% } %>
 
   <% if (err_msg && err_msg.length > 0) { %>
@@ -33,6 +33,7 @@
     <% } %>
   <% } %>
 
+  <% if (user) { %>
   <form action="/admin/users/edit/<%= user.id %>" method="POST">
     <label>Name:</label>
     <input type="text" name="name" value="<%= user.name %>" required>
@@ -48,6 +49,9 @@
 
     <button type="submit">Update User</button>
   </form>
+  <% } else { %>
+    <p>User not found</p>
+  <% } %>
 
   <a href="/admin/users">⬅ Back to Users</a>
 </body>

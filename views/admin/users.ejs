@@ -29,26 +29,30 @@
 </tr>
 </thead>
 <tbody>
-<% users.forEach(user => { %>
-  <tr class="<%= user.is_active ? '' : 'inactive' %>">
-    <td><%= user.id %></td>
-    <td><%= user.name %></td>
-    <td><%= user.email %></td>
-    <td><%= user.role %></td>
-    <td><%= user.is_active ? 'Active':'Inactive' %></td>
-    <td>
-      <form action="/admin/users/<%= user.id %>" method="POST" style="display:inline;">
-        <button class="<%= user.is_active ? 'deactivate':'activate' %>">
-          <%= user.is_active ? 'Deactivate':'Activate' %>
-        </button>
-      </form>
-      <form action="/admin/users/role/<%= user.id %>" method="POST" style="display:inline;">
-        <button class="role-btn"><%= user.role==='admin'?'Make Employee':'Make Admin' %></button>
-      </form>
-      <a href="/admin/users/edit/<%= user.id %>" class="edit-btn">Edit</a>
-    </td>
-  </tr>
-<% }) %>
+<% if (users && users.length > 0) { %>
+  <% users.forEach(user => { %>
+    <tr class="<%= user.is_active ? '' : 'inactive' %>">
+      <td><%= user.id %></td>
+      <td><%= user.name %></td>
+      <td><%= user.email %></td>
+      <td><%= user.role || '-' %></td>
+      <td><%= user.is_active ? 'Active':'Inactive' %></td>
+      <td>
+        <form action="/admin/users/<%= user.id %>" method="POST" style="display:inline;">
+          <button class="<%= user.is_active ? 'deactivate':'activate' %>">
+            <%= user.is_active ? 'Deactivate':'Activate' %>
+          </button>
+        </form>
+        <form action="/admin/users/role/<%= user.id %>" method="POST" style="display:inline;">
+          <button class="role-btn"><%= user.role==='admin'?'Make Employee':'Make Admin' %></button>
+        </form>
+        <a href="/admin/users/edit/<%= user.id %>" class="edit-btn">Edit</a>
+      </td>
+    </tr>
+  <% }) %>
+<% } else { %>
+  <tr><td colspan="6">No users found</td></tr>
+<% } %>
 </tbody>
 </table>
 
