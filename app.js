@@ -16,7 +16,6 @@ const flash = require("express-flash");
 const initPass = require("./passport/passportconfig");
 const { redirectAuthenticated, ensureAuthenticated, permitRoles } = require("./middleware/auth");
 const logger = require("./logger");
-const sendWebhook = require("./webhooks");
 console.log("sendWebhook type:", typeof sendWebhook);
 
 // ---------- DB ----------
