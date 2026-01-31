@@ -2,22 +2,28 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>My Leave Requests</title>
+  <title>My Leave List</title>
   <style>
-    body { font-family: Arial; background:#f4f6f8; padding:20px; }
-    table { width:100%; border-collapse: collapse; margin-top:20px; }
-    th, td { padding:10px; border:1px solid #ddd; text-align:center; }
-    th { background:#333; color:#fff; }
-    a { text-decoration:none; margin:0 5px; color:#0066cc; }
-    a:hover { text-decoration:underline; }
-    .flash { padding:10px; border-radius:5px; margin-bottom:15px; }
-    .success { background:#d4edda; color:#155724; }
-    .error { background:#f8d7da; color:#721c24; }
+    body { font-family: Arial; background:#f4f6f8; padding:20px; color:#333; }
+    table { width:100%; border-collapse: collapse; background:#fff; border-radius:5px; overflow:hidden; box-shadow:0 2px 6px rgba(0,0,0,0.1); }
+    th, td { padding:12px; border-bottom:1px solid #ddd; text-align:center; }
+    th { background:#007bff; color:#fff; font-weight:bold; }
+    tr:last-child td { border-bottom:none; }
+    .btn { padding:6px 12px; background:#007bff; color:#fff; border:none; border-radius:4px; text-decoration:none; font-weight:bold; cursor:pointer; }
+    .btn-red { background:#dc3545; }
+    .filters { margin-bottom:20px; }
+    .filters select, .filters input { padding:5px 8px; border-radius:4px; border:1px solid #ccc; margin-right:5px; }
+    .flash { padding:10px 15px; border-radius:5px; margin-bottom:15px; font-weight:bold; }
+    .flash.success { background:#d4edda; color:#155724; border:1px solid #c3e6cb; }
+    .flash.error { background:#f8d7da; color:#721c24; border:1px solid #f5c6cb; }
+    .pagination a { margin:0 5px; padding:6px 12px; border:1px solid #ddd; border-radius:4px; text-decoration:none; color:#333; }
+    .pagination a.active { background:#007bff; color:#fff; border-color:#007bff; }
   </style>
 </head>
 <body>
-  <h2>My Leave Requests</h2>
+  <h2>My Leaves</h2>
 
+  <!-- Flash Messages -->
   <% if (success_msg && success_msg.length) { %>
     <div class="flash success">
       <% success_msg.forEach(msg => { %><p><%= msg %></p><% }) %>
@@ -29,38 +35,74 @@
     </div>
   <% } %>
 
+  <!-- Filters -->
+  <div class="filters">
+    <form method="get" action="/employee/leave-list">
+      <select name="status">
+        <option value="all" <%= filter.status === 'all' ? 'selected' : '' %>>All</option>
+        <option value="pending" <%= filter.status === 'pending' ? 'selected' : '' %>>Pending</option>
+        <option value="approved" <%= filter.status === 'approved' ? 'selected' : '' %>>Approved</option>
+        <option value="rejected" <%= filter.status === 'rejected' ? 'selected' : '' %>>Rejected</option>
+      </select>
+      Start: <input type="date" name="startDate" value="<%= filter.startDate || '' %>">
+      End: <input type="date" name="endDate" value="<%= filter.endDate || '' %>">
+      <button type="submit" class="btn">Filter</button>
+      <a href="/employee/leave-list?exportCsv=1<%= filter.status !== 'all' ? '&status=' + filter.status : '' %><%= filter.startDate ? '&startDate=' + filter.startDate : '' %><%= filter.endDate ? '&endDate=' + filter.endDate : '' %>" class="btn">Export CSV</a>
+    </form>
+  </div>
+
+  <!-- Leave Table -->
   <table>
     <thead>
       <tr>
         <th>ID</th>
-        <th>Start</th>
-        <th>End</th>
+        <th>Start Date</th>
+        <th>End Date</th>
         <th>Reason</th>
         <th>Status</th>
+        <th>Actioned By</th>
+        <th>Actioned At</th>
         <th>Actions</th>
       </tr>
     </thead>
     <tbody>
-      <% if (leaves.length === 0) { %>
-        <tr><td colspan="6">No leave requests found.</td></tr>
+      <% if (!leaves || leaves.length === 0) { %>
+        <tr><td colspan="8">No leave requests found.</td></tr>
+      <% } else { %>
+        <% leaves.forEach(leave => { %>
+          <tr>
+            <td><%= leave.id %></td>
+            <td><%= leave.start_date ? new Date(leave.start_date).toISOString().split('T')[0] : '-' %></td>
+            <td><%= leave.end_date ? new Date(leave.end_date).toISOString().split('T')[0] : '-' %></td>
+            <td><%= leave.reason %></td>
+            <td><%= leave.status %></td>
+            <td><%= leave.actioned_by_name || '-' %></td>
+            <td><%= leave.actioned_at ? new Date(leave.actioned_at).toISOString().split('T')[0] : '-' %></td>
+            <td>
+              <% if (leave.status === 'pending') { %>
+                <a href="/employee/leave/edit/<%= leave.id %>" class="btn">Edit</a>
+                <a href="/employee/leave/cancel/<%= leave.id %>" class="btn btn-red" onclick="return confirm('Cancel this leave?')">Cancel</a>
+              <% } else { %>
+                <span>-</span>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
       <% } %>
-      <% leaves.forEach(leave => { %>
-        <tr>
-          <td><%= leave.id %></td>
-          <td><%= leave.start_date ? leave.start_date.toISOString().slice(0,10) : '-' %></td>
-          <td><%= leave.end_date ? leave.end_date.toISOString().slice(0,10) : '-' %></td>
-          <td><%= leave.reason %></td>
-          <td><%= leave.status %></td>
-          <td>
-            <a href="/employee/leave/history/<%= leave.id %>">History</a>
-            <% if (leave.status === 'pending') { %>
-              <a href="/employee/leave/edit/<%= leave.id %>">Edit</a>
-              <a href="/employee/leave/cancel/<%= leave.id %>" onclick="return confirm('Cancel this leave?')">Cancel</a>
-            <% } %>
-          </td>
-        </tr>
-      <% }) %>
     </tbody>
   </table>
+
+  <!-- Pagination -->
+  <div class="pagination">
+    <% for (let i = 1; i <= totalPages; i++) { %>
+      <a href="/employee/leave-list?page=<%= i %><%= filter.status !== 'all' ? '&status=' + filter.status : '' %><%= filter.startDate ? '&startDate=' + filter.startDate : '' %><%= filter.endDate ? '&endDate=' + filter.endDate : '' %>" class="<%= currentPage === i ? 'active' : '' %>"><%= i %></a>
+    <% } %>
+  </div>
+
+  <br>
+  <a href="/employee/dashboard" class="btn">Back to Dashboard</a>
+  <form action="/logout" method="post" style="display:inline;">
+    <button type="submit" class="btn btn-red">Logout</button>
+  </form>
 </body>
 </html>

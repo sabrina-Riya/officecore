@@ -4,37 +4,49 @@
   <meta charset="UTF-8">
   <title>Edit Leave</title>
   <style>
-    body { font-family: Arial; padding:20px; background:#f4f6f8; }
-    form { max-width:400px; margin-top:20px; }
-    input, textarea { width:100%; padding:8px; margin:8px 0; }
-    button { padding:10px 15px; }
-    .flash { padding:10px; border-radius:5px; margin-bottom:15px; }
-    .success { background:#d4edda; color:#155724; }
-    .error { background:#f8d7da; color:#721c24; }
+    body { font-family: Arial; background: #f4f6f8; padding: 20px; }
+    .container { max-width: 500px; margin: auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    h2 { text-align: center; color: #333; }
+    label { display: block; margin-top: 10px; font-weight: bold; }
+    input, textarea { width: 100%; padding: 8px; margin-top: 5px; border-radius: 4px; border: 1px solid #ccc; }
+    button { margin-top: 15px; padding: 10px 15px; border: none; background: #007BFF; color: #fff; border-radius: 5px; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    .alert { padding: 10px; margin-bottom: 10px; border-radius: 4px; }
+    .error { background: #f8d7da; color: #842029; }
+    .success { background: #d1e7dd; color: #0f5132; }
+    .back { display: inline-block; margin-top: 10px; text-decoration: none; color: #007BFF; }
   </style>
 </head>
 <body>
-  <h2>Edit Leave - ID: <%= leave.id %></h2>
+  <div class="container">
+    <h2>Edit Leave</h2>
 
-  <% if (success_msg && success_msg.length) { %>
-    <div class="flash success">
-      <% success_msg.forEach(msg => { %><p><%= msg %></p><% }) %>
-    </div>
-  <% } %>
-  <% if (err_msg && err_msg.length) { %>
-    <div class="flash error">
-      <% err_msg.forEach(msg => { %><p><%= msg %></p><% }) %>
-    </div>
-  <% } %>
+    <% if (err_msg && err_msg.length > 0) { %>
+      <% err_msg.forEach(function(msg){ %>
+        <div class="alert error"><%= msg %></div>
+      <% }); %>
+    <% } %>
 
-  <form method="POST" action="/employee/leave/edit/<%= leave.id %>">
-    <label>Start Date:</label>
-    <input type="date" name="sdate" value="<%= leave.start_date ? new Date(leave.start_date).toISOString().slice(0,10) : '' %>" required>
-    <label>End Date:</label>
-    <input type="date" name="edate" value="<%= leave.end_date ? new Date(leave.end_date).toISOString().slice(0,10) : '' %>" required>
-    <label>Reason:</label>
-    <textarea name="reason" rows="4" required><%= leave.reason %></textarea>
-    <button type="submit">Update Leave</button>
-  </form>
+    <% if (success_msg && success_msg.length > 0) { %>
+      <% success_msg.forEach(function(msg){ %>
+        <div class="alert success"><%= msg %></div>
+      <% }); %>
+    <% } %>
+
+    <form action="/employee/leave/edit/<%= leave.id %>" method="post">
+      <label for="sdate">Start Date</label>
+      <input type="date" id="sdate" name="sdate" value="<%= leave.start_date ? leave.start_date.toISOString().split('T')[0] : '' %>" required>
+
+      <label for="edate">End Date</label>
+      <input type="date" id="edate" name="edate" value="<%= leave.end_date ? leave.end_date.toISOString().split('T')[0] : '' %>" required>
+
+      <label for="reason">Reason</label>
+      <textarea id="reason" name="reason" rows="4" required><%= leave.reason || '' %></textarea>
+
+      <button type="submit">Update Leave</button>
+    </form>
+
+    <a class="back" href="javascript:history.back()">← Back</a>
+  </div>
 </body>
 </html>

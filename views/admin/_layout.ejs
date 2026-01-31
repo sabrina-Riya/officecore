@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title><%= title || "Admin Panel" %></title>
+  <style>
+    body { font-family: Arial; background:#f4f6f8; padding:20px; }
+    nav a { margin-right:15px; text-decoration:none; font-weight:bold; }
+    .flash-success { color:green; margin-bottom:10px; }
+    .flash-error { color:red; margin-bottom:10px; }
+  </style>
+</head>
+<body>
+
+<nav>
+  <a href="/admin/dashboard">Dashboard</a>
+  <a href="/admin/users">Users</a>
+  <a href="/admin/leave">Leave Requests</a>
+  <a href="/admin/audit_logs">Audit Logs</a>
+  <form action="/logout" method="POST" style="display:inline;">
+    <button>Logout</button>
+  </form>
+</nav>
+
+<hr>
+
+<% if (success_msg && success_msg.length) { %>
+  <div class="flash-success"><%= success_msg[0] %></div>
+<% } %>
+
+<% if (err_msg && err_msg.length) { %>
+  <div class="flash-error"><%= err_msg[0] %></div>
+<% } %>
+
+<%- body %>
+
+</body>
+</html>

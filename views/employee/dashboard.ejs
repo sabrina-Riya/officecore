@@ -4,29 +4,108 @@
   <meta charset="UTF-8">
   <title>Employee Dashboard</title>
   <style>
-    body { font-family: Arial; background:#f4f6f8; padding:20px; }
-    .card { display:inline-block; padding:20px; margin:10px; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,0.1); border-radius:8px; width:200px; text-align:center; text-decoration:none; color:#333; }
+    body { font-family: Arial; background:#f4f6f8; padding:20px; color:#333; }
+    h2 { color:#222; }
+
+    .flash { padding:10px 15px; border-radius:5px; margin-bottom:15px; font-weight:bold; }
+    .flash.success { background:#d4edda; color:#155724; border:1px solid #c3e6cb; }
+    .flash.error { background:#f8d7da; color:#721c24; border:1px solid #f5c6cb; }
+
+    nav { margin-bottom:15px; }
+    nav a { margin-right:15px; text-decoration:none; font-weight:bold; color:#007bff; }
+    nav a:hover { text-decoration:underline; }
+    nav form { display:inline; }
+    nav form button { padding:6px 12px; border:none; border-radius:4px; background:#dc3545; color:#fff; font-weight:bold; cursor:pointer; transition:0.2s; }
+
+    .filter { margin-bottom:20px; }
+    .filter select { padding:6px 10px; border-radius:4px; border:1px solid #ccc; font-size:14px; }
+    .filter button { padding:6px 12px; border:none; border-radius:4px; background:#007bff; color:#fff; cursor:pointer; font-weight:bold; margin-left:5px; transition:0.2s; }
+    .filter button:hover { background:#0056b3; }
+
+    table { width:100%; border-collapse: collapse; margin-top:10px; background:#fff; box-shadow:0 2px 6px rgba(0,0,0,0.1); border-radius:5px; overflow:hidden; }
+    th, td { padding:12px 15px; text-align:center; border-bottom:1px solid #ddd; }
+    th { background:#007bff; color:#fff; font-weight:bold; }
+    tr:last-child td { border-bottom:none; }
+
+    .action-links a { margin:0 5px; }
   </style>
 </head>
 <body>
+
+  <nav>
+    <a href="/employee/leave-list">Leave Requests</a>
+    <a href="/employee/leave-apply">Apply Leave</a>
+    <a href="/employee/audit_logs">Audit Logs</a>
+    <a href="/employee/2fa-setup">Enable 2FA</a>
+    <form action="/logout" method="POST">
+      <button type="submit">Logout</button>
+    </form>
+  </nav>
+
   <h2>Welcome, <%= username %></h2>
-  <div class="cards">
-    <a class="card" href="/employee/leave-list">
-      <h3>Total Leaves</h3>
-      <p><%= totalleave %></p>
-    </a>
-    <a class="card" href="/employee/leave-list?status=pending">
-      <h3>Pending Leaves</h3>
-      <p><%= pendingLeave %></p>
-    </a>
-    <a class="card" href="/employee/leave-list?status=approved">
-      <h3>Approved Leaves</h3>
-      <p><%= approvedLeave %></p>
-    </a>
-    <a class="card" href="/employee/leave-list?status=rejected">
-      <h3>Rejected Leaves</h3>
-      <p><%= rejectedLeave %></p>
-    </a>
-  </div>
+
+  <!-- Flash messages -->
+  <% if (success_msg && success_msg.length) { %>
+    <div class="flash success">
+      <% success_msg.forEach(msg => { %>
+        <p><%= msg %></p>
+      <% }) %>
+    </div>
+  <% } %>
+  <% if (err_msg && err_msg.length) { %>
+    <div class="flash error">
+      <% err_msg.forEach(msg => { %>
+        <p><%= msg %></p>
+      <% }) %>
+    </div>
+  <% } %>
+
+  <!-- Filter -->
+  <form method="GET" class="filter" action="/employee/leave-list">
+    <label for="status">Filter by status:</label>
+    <select name="status" id="status">
+      <option value="all" <%= filter === "all" ? "selected" : "" %>>All</option>
+      <option value="pending" <%= filter === "pending" ? "selected" : "" %>>Pending</option>
+      <option value="approved" <%= filter === "approved" ? "selected" : "" %>>Approved</option>
+      <option value="rejected" <%= filter === "rejected" ? "selected" : "" %>>Rejected</option>
+    </select>
+    <button type="submit">Filter</button>
+  </form>
+
+  <!-- Leave Requests Table -->
+  <table>
+    <thead>
+      <tr>
+        <th>ID</th>
+        <th>Start Date</th>
+        <th>End Date</th>
+        <th>Reason</th>
+        <th>Status</th>
+        <th>Actions</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% if (!leaves || leaves.length === 0) { %>
+        <tr><td colspan="6">No leave requests found.</td></tr>
+      <% } else { %>
+        <% leaves.forEach(leave => { %>
+          <tr>
+            <td><%= leave.id %></td>
+            <td><%= leave.start_date ? new Date(leave.start_date).toISOString().slice(0,10) : "-" %></td>
+            <td><%= leave.end_date ? new Date(leave.end_date).toISOString().slice(0,10) : "-" %></td>
+            <td><%= leave.reason %></td>
+            <td><%= leave.status %></td>
+            <td class="action-links">
+              <a href="/employee/leave/history/<%= leave.id %>">View</a>
+              <% if (leave.status === "pending") { %>
+                <a href="/employee/leave/edit/<%= leave.id %>">Edit</a>
+                <a href="/employee/leave/cancel/<%= leave.id %>" onclick="return confirm('Cancel this leave?')">Cancel</a>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
+      <% } %>
+    </tbody>
+  </table>
 </body>
 </html>

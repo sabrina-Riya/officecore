@@ -4,26 +4,26 @@
   <meta charset="UTF-8">
   <title>Edit User</title>
   <style>
-    body { font-family: Arial, sans-serif; padding: 20px; background: #f4f6f8; }
-    form { max-width: 400px; margin-top: 20px; }
-    input, select { width: 100%; padding: 8px; margin: 8px 0; }
-    button { padding: 10px 15px; }
-    .success { color: green; }
-    .error { color: red; }
+    body { font-family: Arial; padding: 20px; background: #f4f6f8; }
+    h2 { color: #333; }
+    form { max-width: 400px; margin-top: 20px; background: #fff; padding: 20px; border-radius: 8px; }
+    input, select { width: 100%; padding: 8px; margin: 8px 0; border-radius: 4px; border: 1px solid #ccc; }
+    button { padding: 10px 15px; border: none; border-radius: 4px; background: #007BFF; color: #fff; cursor: pointer; }
+    button:hover { background: #0056b3; }
+    .success { background: #d4edda; color: #155724; padding: 10px; border-radius: 5px; margin-bottom: 10px; }
+    .error { background: #f8d7da; color: #721c24; padding: 10px; border-radius: 5px; margin-bottom: 10px; }
+    .back-link { display: block; margin-top: 20px; }
   </style>
 </head>
 <body>
   <h2>Edit User - <%= user.name %></h2>
 
-  <!-- Messages Partial -->
   <% if (success_msg && success_msg.length) { %>
     <div class="success"><%= success_msg %></div>
   <% } %>
   <% if (err_msg && err_msg.length) { %>
     <div class="error">
-      <% err_msg.forEach(msg => { %>
-        <p><%= msg %></p>
-      <% }) %>
+      <% err_msg.forEach(msg => { %><p><%= msg %></p><% }) %>
     </div>
   <% } %>
 
@@ -42,5 +42,7 @@
 
     <button type="submit">Update User</button>
   </form>
+
+  <a href="/admin/users" class="back-link">← Back to Users List</a>
 </body>
 </html>

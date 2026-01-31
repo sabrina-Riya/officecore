@@ -1,17 +1,20 @@
-require("dotenv").config();
+// dbconfig.js
+require("dotenv").config(); // load .env
+
 const { Pool } = require("pg");
 
-const connectionString = process.env.DATABASE_URL;
-
-// Enable SSL for Render (remote DB) only
-const useSSL = connectionString && !connectionString.includes("localhost");
-
 const pool = new Pool({
-  connectionString,
-  ssl: useSSL ? { rejectUnauthorized: false } : false,
+  connectionString: process.env.DATABASE_URL,
+  ssl: process.env.NODE_ENV === "production" ? { rejectUnauthorized: false } : false
 });
 
-pool.on("connect", () => console.log("Postgres connected"));
-pool.on("error", (err) => console.error("Postgres pool error:", err));
+pool.connect()
+  .then(client => {
+    console.log("✅ Postgres connected");
+    client.release();
+  })
+  .catch(err => {
+    console.error("❌ Postgres connection error:", err.stack || err);
+  });
 
 module.exports = { pool };

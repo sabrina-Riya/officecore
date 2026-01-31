@@ -4,16 +4,20 @@
   <meta charset="UTF-8">
   <title>Admin Leave Requests</title>
   <style>
-    body { font-family: Arial; background:#f4f6f8; padding:20px; }
-    h2 { color:#333; }
-    table { width:100%; border-collapse: collapse; margin-top:20px; }
-    th, td { padding:10px; border:1px solid #ddd; text-align:center; }
-    th { background:#333; color:#fff; }
-    a { text-decoration:none; margin:0 5px; color:#0066cc; }
-    a:hover { text-decoration:underline; }
-    .flash { padding:10px; margin-bottom:15px; border-radius:5px; }
-    .success { background:#d4edda; color:#155724; }
-    .error { background:#f8d7da; color:#721c24; }
+    body { font-family: Arial; background: #f4f6f8; padding: 20px; }
+    h2 { color: #333; }
+    table { width: 100%; border-collapse: collapse; margin-top: 20px; background: #fff; }
+    th, td { padding: 10px; border: 1px solid #ddd; text-align: center; }
+    th { background: #333; color: #fff; }
+    a, button { margin: 0 5px; cursor: pointer; }
+    button { border: none; padding: 5px 10px; border-radius: 4px; background: #007BFF; color: #fff; transition: 0.2s; }
+    button:hover { background: #0056b3; }
+    a:hover { text-decoration: underline; }
+    .flash { padding: 10px; margin-bottom: 15px; border-radius: 5px; }
+    .success { background: #d4edda; color: #155724; }
+    .error { background: #f8d7da; color: #721c24; }
+    .back-link { display: block; margin-top: 20px; }
+    form { display: inline; }
   </style>
 </head>
 <body>
@@ -47,28 +51,34 @@
       </tr>
     </thead>
     <tbody>
-      <% if (leaves.length === 0) { %>
-        <tr>
-          <td colspan="6">No leave requests found.</td>
-        </tr>
+      <% if (!leaves || leaves.length === 0) { %>
+        <tr><td colspan="6">No leave requests found.</td></tr>
+      <% } else { %>
+        <% leaves.forEach(leave => { %>
+          <tr>
+            <td><%= leave.id %></td>
+            <td><%= leave.employee_name %></td>
+            <td><%= leave.start_date ? new Date(leave.start_date).toISOString().slice(0,10) : "-" %></td>
+            <td><%= leave.end_date ? new Date(leave.end_date).toISOString().slice(0,10) : "-" %></td>
+            <td><%= leave.status %></td>
+            <td>
+              <% if (leave.status === "pending") { %>
+                <form action="/admin/leave/approve/<%= leave.id %>" method="POST">
+                  <button onclick="return confirm('Approve this leave?')">Approve</button>
+                </form>
+                <form action="/admin/leave/reject/<%= leave.id %>" method="POST">
+                  <button class="btn-red" onclick="return confirm('Reject this leave?')">Reject</button>
+                </form>
+              <% } else { %>
+                <span>-</span>
+              <% } %>
+            </td>
+          </tr>
+        <% }) %>
       <% } %>
-      <% leaves.forEach(leave => { %>
-        <tr>
-          <td><%= leave.id %></td>
-          <td><%= leave.employee_name %></td>
-          <td><%= leave.start_date ? new Date(leave.start_date).toISOString().slice(0,10) : "-" %></td>
-          <td><%= leave.end_date ? new Date(leave.end_date).toISOString().slice(0,10) : "-" %></td>
-          <td><%= leave.status %></td>
-          <td>
-            <a href="/admin/leave/<%= leave.id %>">View</a>
-            <% if (leave.status === "pending") { %>
-              <a href="/admin/leave/approve/<%= leave.id %>" onclick="return confirm('Approve this leave?')">Approve</a>
-              <a href="/admin/leave/reject/<%= leave.id %>">Reject</a>
-            <% } %>
-          </td>
-        </tr>
-      <% }) %>
     </tbody>
   </table>
+
+  <a href="/admin/dashboard" class="back-link">← Back to Dashboard</a>
 </body>
 </html>

@@ -1,4 +1,4 @@
-const { pool } = require("./dbconfig");
+const { pool } = require("../dbconfig");
 
 async function logAudit({ action, performedBy, targetTable, targetId, oldStatus = null, newStatus = null, message = null }) {
   try {

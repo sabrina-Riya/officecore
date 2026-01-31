@@ -2,107 +2,42 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>OfficeCore Registration</title>
+  <title>Register</title>
   <style>
-    body {
-      font-family: Arial, sans-serif;
-      background: #f4f6f8;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      padding: 40px;
-      color: #333;
-    }
-
-    h2 {
-      margin-bottom: 20px;
-      color: #111;
-    }
-
-    form {
-      background: #fff;
-      padding: 20px;
-      width: 300px;
-      border-radius: 8px;
-      box-shadow: 0 3px 10px rgba(0,0,0,0.1);
-    }
-
-    input {
-      width: 100%;
-      padding: 8px;
-      margin-bottom: 12px;
-      border-radius: 4px;
-      border: 1px solid #ccc;
-    }
-
-    button {
-      width: 100%;
-      padding: 10px;
-      background: #007bff;
-      color: white;
-      border: none;
-      border-radius: 4px;
-      font-weight: bold;
-      cursor: pointer;
-      transition: 0.2s;
-    }
-
-    button:hover {
-      background: #0056b3;
-    }
-
-    .message {
-      margin-bottom: 10px;
-      color: red;
-    }
-
-    .message.success {
-      color: green;
-    }
-
-    a {
-      text-decoration: none;
-      color: #007bff;
-      display: block;
-      margin-top: 10px;
-    }
-
-    a:hover {
-      text-decoration: underline;
-    }
-
-    footer {
-      margin-top: 30px;
-      font-size: 0.9em;
-      color: #666;
-    }
+    body { font-family: Arial; background:#f4f6f8; padding:50px; display:flex; justify-content:center; }
+    .form-container { background:#fff; padding:30px; border-radius:8px; box-shadow:0 2px 6px rgba(0,0,0,0.1); width:350px; }
+    input { width:100%; padding:10px; margin:10px 0; border:1px solid #ccc; border-radius:4px; }
+    button { width:100%; padding:10px; background:#007bff; color:#fff; border:none; border-radius:4px; cursor:pointer; }
+    .error { color:red; margin-bottom:10px; }
+    .success { color:green; margin-bottom:10px; }
+    a { display:block; margin-top:10px; text-align:center; }
   </style>
 </head>
 <body>
+  <div class="form-container">
+    <h2>Register</h2>
 
-  <h2>Register</h2>
+    <% if (typeof error !== 'undefined' && error.length > 0) { %>
+      <div class="error">
+        <% error.forEach(e => { %>
+          <p><%= e %></p>
+        <% }) %>
+      </div>
+    <% } %>
 
-  <% if (error && error.length > 0) { %>
-    <% error.forEach(err => { %>
-      <div class="message"><%= err.message %></div>
-    <% }) %>
-  <% } %>
+    <% if (typeof success_msg !== 'undefined' && success_msg.length > 0) { %>
+      <div class="success"><%= success_msg %></div>
+    <% } %>
 
-  <form action="/register" method="post">
-    <input type="text" name="name" placeholder="Enter your name" required>
-    <input type="email" name="email" placeholder="Enter your email" required>
-    <input type="password" name="password" placeholder="Enter your password" required>
-    <input type="password" name="conpass" placeholder="Confirm your password" required>
-    <button type="submit">Register</button>
-  </form>
+    <form action="/register" method="post">
+      <input type="text" name="name" placeholder="Full Name" value="<%= (oldInput && oldInput.name) ? oldInput.name : '' %>" required>
+      <input type="email" name="email" placeholder="Email" value="<%= (oldInput && oldInput.email) ? oldInput.email : '' %>" required>
+      <input type="password" name="password" placeholder="Password (min 6 chars)" required>
+      <input type="password" name="confirmPassword" placeholder="Confirm Password" required>
+      <button type="submit">Register</button>
+    </form>
 
-  <p>Already registered? <a href="/login">Login here</a></p>
-
-  <footer>
-    © 2025 OfficeCore
-  </footer>
-
+    <a href="/login">Already have an account? Login</a>
+  </div>
 </body>
 </html>
