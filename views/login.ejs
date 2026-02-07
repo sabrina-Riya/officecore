@@ -16,10 +16,7 @@
       color: #333;
     }
 
-    h2 {
-      margin-bottom: 20px;
-      color: #111;
-    }
+    h2 { margin-bottom: 20px; color: #111; }
 
     form {
       background: #fff;
@@ -27,6 +24,8 @@
       width: 300px;
       border-radius: 8px;
       box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+      display: flex;
+      flex-direction: column;
     }
 
     input {
@@ -47,43 +46,24 @@
       font-weight: bold;
       cursor: pointer;
       transition: 0.2s;
+      margin-bottom: 8px;
     }
 
-    button:hover {
-      background: #0056b3;
-    }
+    button:hover { background: #0056b3; }
 
-    .message {
-      margin-bottom: 10px;
-      color: red;
-    }
-
-    .message.success {
-      color: green;
-    }
-
-    a {
-      text-decoration: none;
-      color: #007bff;
-      display: block;
-      margin-top: 10px;
-    }
-
-    a:hover {
-      text-decoration: underline;
-    }
-
-    footer {
-      margin-top: 30px;
-      font-size: 0.9em;
-      color: #666;
-    }
+    .message { margin-bottom: 10px; color: red; }
+    .message.success { color: green; }
+    a { text-decoration: none; color: #007bff; display: block; margin-top: 10px; }
+    a:hover { text-decoration: underline; }
+    footer { margin-top: 30px; font-size: 0.9em; color: #666; }
   </style>
 </head>
 <body>
+  
 
   <h2>Login</h2>
 
+  <!-- Display flash messages -->
   <% if (messages.success_msg && messages.success_msg.length) { %>
     <% messages.success_msg.forEach(msg => { %>
       <div class="message success"><%= msg %></div>
@@ -96,6 +76,13 @@
     <% }) %>
   <% } %>
 
+  <!-- Demo Login Buttons -->
+  <div style="margin-bottom: 15px;">
+    <a href="/demo/admin"><button type="button">Login as Demo Admin</button></a>
+    <a href="/demo/employee"><button type="button">Login as Demo Employee</button></a>
+  </div>
+
+  <!-- Normal login form -->
   <form action="/login" method="post">
     <input type="email" name="email" placeholder="Enter your email" value="<%= demoEmail || '' %>" required>
     <input type="password" name="password" placeholder="Enter your password" value="<%= demoPassword || '' %>" required>
@@ -104,8 +91,6 @@
 
   <a href="/register">Not registered? Register here</a>
 
-  <footer>
-    © 2025 OfficeCore
-  </footer>
+  <footer>© 2025 OfficeCore</footer>
 </body>
 </html>

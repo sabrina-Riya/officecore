@@ -1,8 +1,0 @@
-<h2>Setup 2FA</h2>
-<p>Scan this QR code with your Google Authenticator app:</p>
-<img src="<%= qrCodeDataURL %>" alt="2FA QR Code">
-<form action="/2fa-setup" method="POST">
-  <label>Enter the 6-digit code from app:</label>
-  <input type="text" name="token" required />
-  <button type="submit">Verify & Enable 2FA</button>
-</form>
