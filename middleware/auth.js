@@ -1,35 +1,26 @@
-// middleware/auth.js
-
-function redirectAuthenticated(req, res, next) {
-  if (req.isAuthenticated() && req.user?.role) {
-    const role = req.user.role.toLowerCase();
-    if (role === "admin") return res.redirect("/admin/dashboard");
-    if (role === "employee") return res.redirect("/employee/dashboard");
-  }
-  next();
-}
-
 function ensureAuthenticated(req, res, next) {
-  if (req.isAuthenticated()) return next();
-  req.flash("error", "Please login first");
+  if (req.isAuthenticated && req.isAuthenticated()) {
+    return next();
+  }
+  req.flash("err_msg", "Please login first");
   return res.redirect("/login");
 }
-function ensure2FASession(req, res, next) {
-  if (!req.session.twoFactorUserId) {
-    req.flash("error", "2FA session expired. Login again.");
-    return res.redirect("/login");
+
+function redirectAuthenticated(req, res, next) {
+  // Only redirect if the session is valid AND the user object exists
+  if (req.isAuthenticated && req.isAuthenticated() && req.user) {
+    const role = req.user.role.toLowerCase();
+    if (role === "admin" || role === "employee") {
+      return res.redirect("/dashboard");
+    }
   }
   next();
 }
 
 function permitRoles(...roles) {
   return (req, res, next) => {
-    if (!req.isAuthenticated()) {
-      req.flash("error", "Please login first");
-      return res.redirect("/login");
-    }
-    if (!roles.includes(req.user.role.toLowerCase())) {
-      req.flash("error", "You do not have permission to access this page");
+    if (!req.user || !roles.includes(req.user.role)) {
+      req.flash("err_msg", "Unauthorized access");
       return res.redirect("/login");
     }
     next();
@@ -37,7 +28,7 @@ function permitRoles(...roles) {
 }
 
 module.exports = {
-  redirectAuthenticated,
   ensureAuthenticated,
-  permitRoles,
+  redirectAuthenticated,
+  permitRoles
 };
