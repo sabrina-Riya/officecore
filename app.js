@@ -43,8 +43,8 @@ app.use(express.urlencoded({ extended: false }));
 
 // ---------- VIEW ENGINE ----------
 app.set("view engine", "ejs");
+app.set("trust proxy", 1); // BEFORE session middleware
 
-// ---------- SESSION ----------
 app.use(
   session({
     store: new pgSession({
@@ -55,11 +55,13 @@ app.use(
     secret: process.env.SESSION_SECRET || "mySuperSecret123",
     resave: false,
     saveUninitialized: false,
+    rolling: true,
+    proxy: true, // 👈 critical for Render
     cookie: {
       httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: process.env.NODE_ENV === "production" ? "none" : "lax",
-      maxAge: 2 * 60 * 1000 
+      secure: true,       // 👈 always true on Render
+      sameSite: "none",   // 👈 cross-site cookies
+      maxAge: 10 * 60 * 1000
     }
   })
 );
@@ -69,21 +71,33 @@ app.use((req, res, next) => {
   console.log("➡️ REQUEST:", req.method, req.originalUrl);
   next();
 });
+// Prevent caching of sensitive pages
 app.use((req, res, next) => {
-  res.set(
-    "Cache-Control",
-    "no-cache, no-store, must-revalidate, private"
-  );
-  res.set("Pragma", "no-cache");
-  res.set("Expires", "0");
+  res.setHeader("Cache-Control", "no-store, no-cache, must-revalidate, private");
+  res.setHeader("Pragma", "no-cache");
+  res.setHeader("Expires", "0");
   next();
 });
-
-
 // ---------- PASSPORT ----------
+initPass(passport);
 app.use(passport.initialize());
 app.use(passport.session());
-initPass(passport);
+
+
+
+
+app.use((req, res, next) => {
+  console.log("🔎 DEBUG", {
+    path: req.originalUrl,
+    isAuth: req.isAuthenticated?.(),
+    user: req.user ? {
+      id: req.user.id,
+      email: req.user.email,
+      role: req.user.role
+    } : null
+  });
+  next();
+});
 
 // ---------- FLASH ----------
 app.use(flash());
@@ -128,6 +142,17 @@ process.on("uncaughtException", err => {
   logger.error(`Uncaught Exception | ${err.stack || err}`);
   process.exit(1);
 });
+
+app.use((req, res, next) => {
+  console.log("🔎 DEBUG", {
+    path: req.path,
+    secure: req.secure,
+    isAuth: req.isAuthenticated?.(),
+    user: req.user?.email || null
+  });
+  next();
+});
+
 // ---------- LOGIN ----------
 app.post(
   "/login",
@@ -327,7 +352,14 @@ app.get("/", (req, res) => {
   const error = req.flash("error") || [];
   res.render("index", { error });
 });
-app.get("/login", redirectAuthenticated, (req, res) => {
+app.get("/login", (req, res) => {
+  if (req.isAuthenticated?.() && req.user) {
+    const role = req.user.role.toLowerCase();
+    return res.redirect(
+      role === "admin" ? "/admin/dashboard" : "/employee/dashboard"
+    );
+  }
+
   res.render("login", {
     demoEmail: "demo_admin@example.com",
     demoPassword: "DemoAdmin123!",
@@ -337,6 +369,7 @@ app.get("/login", redirectAuthenticated, (req, res) => {
     }
   });
 });
+
 app.get("/dashboard", ensureAuthenticated, (req, res) => {
   if (!req.user) return res.redirect("/login");
 
